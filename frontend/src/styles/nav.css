@@ -1,0 +1,212 @@
+.navbar {
+  position: absolute; 
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 24px;
+  z-index: 1000;
+
+  /* Прозорість */
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  
+  pointer-events: none; 
+}
+/* --- КНОПКИ НАВІГАЦІЇ --- */
+/* Повертаємо клікабельність кнопкам, бо батьківський контейнер ми "вимкнули" */
+.nav-link {
+  pointer-events: auto; 
+  position: relative;
+  margin: 0 9px;
+  padding: 10px 30px;
+  border-radius: 22px;
+
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+
+  color: rgba(255, 255, 255, 0.95);
+
+  /* Фон самих кнопок (скляний ефект) залишається */
+  background: linear-gradient(
+    13deg,
+    rgba(141, 132, 132, 0.35),
+    rgba(39, 25, 25, 0.08)
+  );
+
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+
+  border: 1px solid rgba(63, 63, 63, 0.226);
+
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.25),
+    inset 0 1px 1px rgba(161, 149, 149, 0.45),
+    inset 0 -1px 1px rgba(64, 224, 208, 0.25);
+
+  overflow: hidden;
+  transition: all 0.4s ease;
+}
+
+.nav-link::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: -70%;
+  width: 60%;
+  height: 140%;
+
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0)
+  );
+
+  transform: skewX(-25deg);
+  transition: left 0.8s ease;
+}
+
+.nav-link:hover {
+  transform: scale(1.12);
+  color: #cffff7;
+
+  box-shadow:
+    0 14px 40px rgba(116, 133, 131, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.55);
+}
+
+.nav-link:hover::before {
+  left: 140%;
+}
+
+.nav-link:hover::after {
+  opacity: 1;
+}
+
+.nav-link:active {
+  transform: scale(1.05);
+  box-shadow:
+    0 6px 16px rgba(64, 224, 208, 0.25),
+    inset 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* --- КНОПКА CTA (Головна кнопка на сторінці) --- */
+.glass-btn {
+  display: inline-block;
+  padding: 14px 32px;
+  border-radius: 22px;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  color: rgba(255, 255, 255, 0.95);
+  background: linear-gradient(
+    135deg,
+    rgba(141, 132, 132, 0.32),
+    rgba(39, 25, 25, 0.08)
+  );
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  border: 1px solid rgba(63, 63, 63, 0.22);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.28),
+    inset 0 1px 1px rgba(180, 170, 170, 0.4);
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.35s ease, box-shadow 0.35s ease, color 0.35s ease;
+}
+
+.glass-btn:hover {
+  transform: scale(1.1);
+  color: #e0fff9;
+
+  box-shadow:
+    0 16px 38px rgba(116, 133, 131, 0.35),
+    inset 0 1px 1px rgba(100, 99, 99, 0.5);
+}
+
+.glass-btn:active {
+  transform: scale(0.95);
+  box-shadow:
+    0 6px 16px rgba(77, 126, 121, 0.25),
+    inset 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.home-container {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.home-bg-wrapper {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.home-content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  max-width: 800px;
+  padding: 0 20px;
+}
+
+.glass-btn:focus,
+.glass-btn:focus-visible {
+  outline: none;
+}
+
+.glass-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(200, 255, 245, 0.4),
+    0 12px 30px rgba(116, 133, 131, 0.45);
+}
+
+h1 {
+  background: linear-gradient(90deg, #e0fff9, #9aa4ff);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+h1 {
+  font-size: 3.5em;
+  margin-bottom: 0.2em;
+}
+
+.home-content {
+  animation: fadeUp 1s ease forwards;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
