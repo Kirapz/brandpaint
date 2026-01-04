@@ -1,46 +1,62 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateLayout } from '../api/api';
-import '../styles/Gentr.css';
+import { useAuth } from '../context/AuthContext';
+import { saveHistoryForUser } from '../firebase';
 
 const Generator = () => {
   const [description, setDescription] = useState('');
-  const [brandName, setBrandName] = useState(''); // Нове поле для назви
+  const [brandName, setBrandName] = useState(''); 
   const [keywords, setKeywords] = useState('');
-  const [preset, setPreset] = useState('minimal');
+  const [preset, setPreset] = useState('default');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleGenerate = async (e) => {
     e.preventDefault();
     setLoading(true);
+    
     try {
       // Тепер відправляємо і brandName, і preset
       const result = await generateLayout({ 
         brandName,
         description, 
-        keywords: keywords.split(','),
+         keywords: keywords.split(',').map(k => k.trim()).filter(Boolean),
         preset
       });
 
       if (result.success) {
+        // save to firebase history if user is logged in
+        if (user && user.uid) {
+          // payload: зберігаємо description, brandName, preset і сам згенерований шаблон
+          await saveHistoryForUser(user.uid, {
+            title: brandName || (description || '').slice(0, 50),
+            description,
+            preset,
+            keywords: keywords.split(',').map(k=>k.trim()).filter(Boolean),
+            template: result.data, // зберігаємо об'єкт шаблону (HTML/CSS) — обережно з розміром
+          });
+        }
+
         navigate('/editor?' + Date.now(), {
-           state: { template: result.data }
-        });       
+          state: { template: result.data }
+        });
       }
+      
     } catch (error) {
       alert('Сталася помилка при генерації');
+      console.error(error);
     } finally {
       setLoading(false);
     }
+    
   };
 
   return (
     <div className="generator-container">
       <h2>Генератор BrandPaint</h2>
       <form onSubmit={handleGenerate} className="form-grid">
-        
-        {/* НОВЕ ПОЛЕ: Назва бренду */}
         <div className="form-item">
           <label>Назва вашого бренду:</label>
           <input 
@@ -88,7 +104,6 @@ const Generator = () => {
           </select>
           <p className="hint">Це вплине на шрифти та форму кнопок.</p>
         </div>
-
         <button className="glass-btn" type="submit" disabled={loading}>
           {loading ? 'Створюємо ваш дизайн...' : 'Згенерувати'}
         </button>

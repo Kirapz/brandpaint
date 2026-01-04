@@ -3,16 +3,16 @@
 function extractBusinessType(text = '') {
   const t = text.toLowerCase();
 
-  const MAP = {
-    healthcare: /(лікар|лікарн|клінік|медич|hospital|clinic|medical)/,
-    food: /(кава|кавов|кафе|ресторан|їжа|coffee|cafe|restaurant|food|coffe)/,
-    it: /(it|tech|web|software|app|стартап|програм|сайт)/,
-    creative: /(дизайн|портфоліо|art|design|creative|фото|studio)/,
-    shop: /(магазин|shop|store|brand|одяг|fashion)/,
-    business: /(business|corporate|agency|consulting|bank|бізнес)/,
-    education: /(школ|курс|academy|education|навчан)/,
-    beauty: /(салон|beauty|spa|hair|барбер)/,
-  };
+const MAP = {
+  healthcare: /(лікар|лікарн|клінік|медич|медцентр|стомат|аптек|здоров|терап|hospital|clinic|medical|health|pharmacy)/,
+  food: /(кава|кав|кав['’]ярн|кафе|ресторан|їжа|бар|піца|доставк|десерт|пекарн|кондитер|паб|кухн|смак|coffee|cafe|restaurant|food|pizza|bakery|bar)/,
+  it: /(it|tech|web|software|app|стартап|програм|айті|тех|розробк|сервіс|цифр|диджитал|digital|dev|coding|дев|AI)/,
+  creative: /(дизайн|портфоліо|art|design|creative|фото|студія|мист|архіт|креатив|галер|studio|photography|artist)/,
+  shop: /(магазин|shop|store|бренд|бренд\w*|одяг|одяг\w*|взутт|товар|торг|бутік|маркет|трц|fashion|boutique|market|goods)/i,
+  business: /(business|corporate|agency|consulting|bank|бізнес|корпор|агенц|консульт|банк|фінанс|інвест|офіс|фірм|менеджмент|invest|finance)/,
+  education: /(школ|курс|academy|education|навчан|універ|тренінг|вебінар|урок|вчит|освіт|school|university|training)/,
+  beauty: /(салон|beauty|spa|hair|барбер|макіяж|манікюр|космет|естети|вії|зачіск|makeup|cosmetic|barber|nails)/,
+};
 
   for (const [type, rx] of Object.entries(MAP)) {
     if (rx.test(t)) return type;

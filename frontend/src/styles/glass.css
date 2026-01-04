@@ -1,0 +1,51 @@
+/* src/styles/glass.css */
+.generator-container {
+  width: 100vw;
+  min-height: 100vh;
+  margin: 0;
+  background-image: url('/фон.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.glass-card {
+  width: 100%;
+  max-width: 760px;
+  padding: 28px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #fff;
+  box-sizing: border-box;
+}
+
+.form-grid { display: flex; flex-direction: column; gap: 18px; }
+.form-item { display: flex; flex-direction: column; }
+label { margin-bottom: 8px; font-size: 14px; color: #fff; font-weight: 500; }
+
+input, textarea, select {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  color: #222;
+  background: rgba(255,255,255,0.92);
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.06);
+  outline: none;
+  transition: all 0.18s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  box-shadow: 0 0 0 6px rgba(125, 94, 150, 0.12);
+}
+
+/* кнопки */
+button { cursor: pointer; }
+

@@ -1,0 +1,118 @@
+/* src/styles/Auth.css */
+
+.auth-form {
+  gap: 18px !important; 
+}
+
+.auth-title {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.password-input-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  flex: 1;
+}
+
+.toggle-password-btn {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.toggle-password-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.password-hint {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #ffbaba; /* Світло-червоний для кращої читабельності на темному */
+  background: rgba(255, 0, 0, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.auth-error-msg {
+  color: #ffdddd;
+  background: rgba(255, 0, 0, 0.15);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  border-left: 3px solid #ff5555;
+}
+
+.auth-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.submit-btn {
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: none;
+  background: #0056b3;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 150px;
+  transition: all 0.3s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #007bff;
+  transform: translateY(-1px);
+}
+
+.submit-btn:disabled {
+  background: #444;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.switch-mode-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+.switch-mode-btn:hover {
+  opacity: 1;
+}
+
+.auth-page {
+  flex: 1; 
+  width: 100%;
+  
+  background-image: url('/фон.jpg'); 
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  
+  background-attachment: fixed; 
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  
+  box-sizing: border-box;
+}

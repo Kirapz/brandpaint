@@ -1,43 +1,59 @@
+:root {
+  --navbar-height: 64px;
+}
+
+/* Global box sizing + basic reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+/* NAVBAR */
 .navbar {
-  position: absolute; 
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 64px;
-
+  height: var(--navbar-height);
   display: flex;
   align-items: center;
   justify-content: center;
-
   padding: 0 24px;
   z-index: 1000;
 
-  /* Прозорість */
+  /* прозорість / скляний вигляд (залишаю як у тебе) */
   background: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border: none !important;
   box-shadow: none !important;
-  
-  pointer-events: none; 
+
+  /* Увага: pointer-events: none робить навбар "прозорим" для подій.
+     Якщо у тебе бувають проблеми з клікабельністю, прибери pointer-events: none. */
+  /* pointer-events: none; */
 }
-/* --- КНОПКИ НАВІГАЦІЇ --- */
-/* Повертаємо клікабельність кнопкам, бо батьківський контейнер ми "вимкнули" */
+
 .nav-link {
-  pointer-events: auto; 
+  pointer-events: auto; /* якщо navbar має pointer-events: none, іноді це все одно не дає кліків — перевір при потребі */
   position: relative;
   margin: 0 9px;
   padding: 10px 30px;
   border-radius: 22px;
-
   text-decoration: none;
   font-size: 15px;
   font-weight: 500;
   letter-spacing: 0.3px;
-
   color: rgba(255, 255, 255, 0.95);
 
-  /* Фон самих кнопок (скляний ефект) залишається */
   background: linear-gradient(
     13deg,
     rgba(141, 132, 132, 0.35),
@@ -53,44 +69,15 @@
     0 8px 22px rgba(0, 0, 0, 0.25),
     inset 0 1px 1px rgba(161, 149, 149, 0.45),
     inset 0 -1px 1px rgba(64, 224, 208, 0.25);
-
-  overflow: hidden;
   transition: all 0.4s ease;
-}
-
-.nav-link::before {
-  content: "";
-  position: absolute;
-  top: -20%;
-  left: -70%;
-  width: 60%;
-  height: 140%;
-
-  background: linear-gradient(
-    120deg,
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0)
-  );
-
-  transform: skewX(-25deg);
-  transition: left 0.8s ease;
 }
 
 .nav-link:hover {
   transform: scale(1.12);
   color: #cffff7;
-
   box-shadow:
     0 14px 40px rgba(116, 133, 131, 0.35),
     inset 0 1px 1px rgba(255, 255, 255, 0.55);
-}
-
-.nav-link:hover::before {
-  left: 140%;
-}
-
-.nav-link:hover::after {
-  opacity: 1;
 }
 
 .nav-link:active {
@@ -100,7 +87,7 @@
     inset 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
-/* --- КНОПКА CTA (Головна кнопка на сторінці) --- */
+/* CTA button */
 .glass-btn {
   display: inline-block;
   padding: 14px 32px;
@@ -124,33 +111,20 @@
   text-decoration: none;
   transition: transform 0.35s ease, box-shadow 0.35s ease, color 0.35s ease;
 }
+.glass-btn:hover { transform: scale(1.1); color: #e0fff9; }
+.glass-btn:active { transform: scale(0.95); }
 
-.glass-btn:hover {
-  transform: scale(1.1);
-  color: #e0fff9;
-
-  box-shadow:
-    0 16px 38px rgba(116, 133, 131, 0.35),
-    inset 0 1px 1px rgba(100, 99, 99, 0.5);
-}
-
-.glass-btn:active {
-  transform: scale(0.95);
-  box-shadow:
-    0 6px 16px rgba(77, 126, 121, 0.25),
-    inset 0 2px 6px rgba(0, 0, 0, 0.35);
-}
-
+/* HOME */
 .home-container {
-  position: relative;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
+  /* забезпечує відступ під navbar і уникає перевищення 100dvh */
+  padding-top: var(--navbar-height);
+  min-height: calc(100dvh - var(--navbar-height));
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+  box-sizing: border-box;
+  /* прибрано max-height: 100dvh; воно викликає проблеми на мобільних браузерах */
 }
 
 .home-bg-wrapper {
@@ -160,7 +134,7 @@
   top: 0;
   left: 0;
   z-index: -1;
-  overflow: hidden;
+  overflow: hidden; /* важливо для фонового canvas */
 }
 
 .home-content {
@@ -170,13 +144,11 @@
   color: #fff;
   max-width: 800px;
   padding: 0 20px;
+  animation: fadeUp 1s ease forwards;
 }
 
+/* Фокус для кнопки */
 .glass-btn:focus,
-.glass-btn:focus-visible {
-  outline: none;
-}
-
 .glass-btn:focus-visible {
   outline: none;
   box-shadow:
@@ -184,29 +156,37 @@
     0 12px 30px rgba(116, 133, 131, 0.45);
 }
 
-h1 {
-  background: linear-gradient(90deg, #e0fff9, #9aa4ff);
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-h1 {
-  font-size: 3.5em;
-  margin-bottom: 0.2em;
-}
-
-.home-content {
-  animation: fadeUp 1s ease forwards;
-}
-
+/* Анімація появи */
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
+/* MOBILE */
+@media (max-width: 768px) {
+  :root { --navbar-height: 56px; } /* трохи менший на мобайлі */
 
+  .navbar {
+    height: auto;
+    padding: 15px 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+    position: fixed; /* фіксована, щоб була завжди зверху */
+    backdrop-filter: blur(10px) !important;
+  }
+
+  .nav-link {
+    margin: 0;
+    padding: 5px 12px;
+    font-size: 12px;
+    border-radius: 15px;
+    display: block;
+    text-align: center;
+    min-width: 100px;
+  }
+
+  .home-container {
+    padding-top: var(--navbar-height);
+    min-height: calc(100dvh - var(--navbar-height));
+  }
+}

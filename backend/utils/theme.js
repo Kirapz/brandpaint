@@ -38,6 +38,7 @@ h1,h2,h3,.logo,.nav-links a { color: var(--text) !important; ${presetStyles.font
 section, header, footer { background: var(--surface) !important; }
 .card, .menu-item { background: var(--card) !important; border: 1px solid var(--border) !important; ${presetStyles.cardShadow ? 'box-shadow: var(--card-shadow) !important;' : ''} }
 
+
 `;
 }
 

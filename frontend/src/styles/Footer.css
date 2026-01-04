@@ -1,0 +1,22 @@
+.app-footer {
+  margin-top: auto;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(6px);
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.dot {
+  opacity: 0.4;
+}

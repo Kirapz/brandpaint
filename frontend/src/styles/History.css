@@ -1,0 +1,203 @@
+/* src/pages/History.css */
+
+.history-page {
+  margin: 0 auto;
+  background: #060607;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+
+  /* Враховуємо висоту navbar, щоб контент не ховався під ним
+     і щоб сумарна висота не перевищувала viewport. */
+  padding-top: calc(var(--navbar-height) + 24px); /* +24px — трохи простору під заголовок */
+  padding-left: 20px;
+  padding-right: 20px;
+
+  /* гарантуємо, що сторінка не "вистрибне" за межі екрана
+     — використовуємо d/vh з відніманням висоти navbar */
+  min-height: calc(100dvh - var(--navbar-height) + 11.5px);
+}
+
+/* Заголовок трішки нижче від верху і з контрастним кольором */
+.history-title {
+  margin: 0 0 24px 0;
+  color: #aaa7a7;
+  font-weight: 600;
+  /* Якщо хочеш додатково відсунути заголовок — змінюй margin-top */
+  /* margin-top: 8px; */
+}
+
+/* Фільтри */
+.history-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Інпут/селект/чекбокс залишаю практично як у тебе */
+.filter-input {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #1a1a1a;
+  color: #865555;
+  flex: 1;
+  min-width: 200px;
+  outline: none;
+}
+
+.filter-select {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #ffffff;
+  color: #000000;
+  cursor: pointer;
+  outline: none;
+}
+.filter-select option { background: #fff; color: #000; }
+
+.filter-checkbox {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 14px;
+  color: #ccc;
+  cursor: pointer;
+  user-select: none;
+}
+.filter-checkbox input:focus { outline: none; box-shadow: none; }
+
+/* Список карток — робимо відступ знизу, щоб остання карта не "підчіплювалась" */
+.history-list {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding-bottom: 28px; /* безпека для останнього елемента */
+}
+
+/* Карточка: прибираю max-width:90% (вона іноді шкодить у гріді)
+   та гарантуємо ширину 100% колонки */
+.history-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.history-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+/* Верх картки + заголовок */
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+/* Опис */
+.desc-toggle-btn {
+  background: none;
+  border: none;
+  color: #004085;
+  padding: 0;
+  margin-top: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  text-decoration: underline;
+  display: block;
+}
+.card-description {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #444;
+  line-height: 1.5;
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 6px;
+  border-left: 3px solid #dee2e6;
+}
+
+/* Дати */
+.card-dates {
+  font-size: 12px;
+  color: #777;
+  margin-top: 8px;
+}
+.updated-label { color: #0056b3; font-weight: 500; }
+
+/* Кнопки дій */
+.card-actions { display: flex; gap: 10px; align-items: center; }
+
+.btn-icon {
+  background: #fff;
+  border: 1px solid #ddd;
+  color: #333;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+.btn-icon:hover { background: #f0f0f0; border-color: #bbb; }
+
+.btn-delete {
+  background: #fff;
+  border: 1px solid #ffccd5;
+  color: #dc3545;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+.btn-delete:hover { background: #fff5f6; border-color: #dc3545; }
+
+.btn-open {
+  background: #490150;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.btn-open:hover { background: #6a0274; }
+
+.empty-state {
+  margin-top: 60px;
+  text-align: center;
+  color: #888;
+  font-style: italic;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .history-list {
+    grid-template-columns: 1fr;
+  }
+  .history-page {
+    padding-top: calc(var(--navbar-height) + 12px);
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .history-card { padding: 14px; }
+}

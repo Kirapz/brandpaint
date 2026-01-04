@@ -1,43 +1,49 @@
 /* Робимо контейнер на весь екран, а форму центруємо */
+/* container сторінки */
 .generator-container {
-  width: 100vw;
-  height: 100vh;
-  margin: 0;
-  
-  /* Фон тепер тут і на весь екран */
-  background-image: url('/фон.jpg'); /* Перевір, чи правильний шлях */
+  width: 100%;
+  padding-top: var(--navbar-height); /* врахувати navbar */
+ min-height: calc(100dvh - var(--navbar-height) + 11.5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+
+  /* фон */
+  background-image: url('/фон.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
 }
 
-.generator-container h2 {
-  margin-bottom: 32px;
-  text-align: center;
-  font-weight: 600;
-  color: #fff;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-}
 
+
+/* карточка форми: обмежуємо висоту і даємо внутрішній скрол при потребі */
 .form-grid {
   display: flex;
   flex-direction: column;
   gap: 24px;
   width: 100%;
-  max-width: 600px; /* Обмежуємо ширину самої форми */
-  padding: 40px;
-  
-  /* Легкий ефект скла тільки під формою */
+  max-width: 600px;
+  padding: 28px;                 /* трохи зменшив padding щоб менше «вистрибувало» */
+  max-height: calc(100dvh - var(--navbar-height) - 48px); /* залишаємо невеликий вільний простір */
+  overflow: auto;                /* внутрішній скрол */
+  -webkit-overflow-scrolling: touch;
+
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(10px);
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+
+
+.generator-container h2 {
+  margin-bottom: 32px;
+  text-align: center;
+  font-weight: 500;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .form-item {
@@ -98,15 +104,17 @@ textarea {
   color: rgba(255, 255, 255, 0.8);
 }
 
+@media (max-width: 768px) {
+  .generator-container {
+    background-attachment: scroll; /* мобільний fallback */
+    background-position: center top;
+  }
+}
 
-.generator-container {
-  min-height: 100vh;
-  background-image: url('/фон.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+@media (max-width: 600px) {
+  .form-grid {
+    margin-bottom: -1px;
+    padding: 18px;
+    max-width: 92%;
+  }
 }

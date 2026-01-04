@@ -1,39 +1,47 @@
-html, body {
+/* Скидання базових відступів і ширини/висоти */
+html, body, #root {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
-  overflow-x: hidden;
+  overflow-x: hidden; /* блокує горизонтальний скрол */
+  box-sizing: border-box; /* для зручності розмірів */
 }
 
-#root {
-  width: 100vw;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* Корінь аплікації */
+.app-root {
+  min-height: 100vh; /* мінімальна висота на весь екран */
+  display: flex;
+  flex-direction: column;
 }
 
+/* Основний контент займає весь простір, що лишився */
+.app-content {
+  flex: 1;
+  display: flex; /* Додай це, якщо його немає */
+  flex-direction: column;
+}
+
+/* Логотип */
 .logo {
   height: 6em;
   padding: 1.5em;
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #393b68aa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #535c5faa);
 }
 
+/* Анімація логотипа */
 @keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -42,20 +50,27 @@ html, body {
   }
 }
 
+/* Карточки */
 .card {
   padding: 2em;
 }
 
+/* Текст для посилань "Read the docs" */
 .read-the-docs {
   color: #888;
 }
 
+/* Контейнери сторінки */
+/* App.css */
+
 .container {
-  padding-top: 0;
-  width: 100vw;
+  width: 100%;
   max-width: none;
   margin: 0;
-  padding-left: 0;
-  padding-right: 0;
+  padding: 0;
+  
+  /* Додай ці три рядки: */
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
 }
-
