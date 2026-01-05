@@ -6,10 +6,18 @@ let firebaseInitialized = false;
 if (process.env.FIREBASE_PROJECT_ID && 
     process.env.FIREBASE_PRIVATE_KEY && 
     process.env.FIREBASE_CLIENT_EMAIL &&
-    process.env.FIREBASE_PRIVATE_KEY !== '"-----BEGIN PRIVATE KEY-----\\nyour_private_key\\n-----END PRIVATE KEY-----\\n"') {
+    process.env.FIREBASE_PRIVATE_KEY !== '"-----BEGIN PRIVATE KEY-----\\nyour_private_key\\n-----END PRIVATE KEY-----\\n"' &&
+    !process.env.FIREBASE_PRIVATE_KEY.includes('your_private_key')) {
   
   try {
     if (!admin.apps.length) {
+      // Додаткове логування для діагностики
+      console.log('Initializing Firebase Admin SDK...');
+      console.log('Project ID:', process.env.FIREBASE_PROJECT_ID);
+      console.log('Client Email:', process.env.FIREBASE_CLIENT_EMAIL);
+      console.log('Private Key ID:', process.env.FIREBASE_PRIVATE_KEY_ID ? 'Present' : 'Missing');
+      console.log('Private Key:', process.env.FIREBASE_PRIVATE_KEY ? 'Present (length: ' + process.env.FIREBASE_PRIVATE_KEY.length + ')' : 'Missing');
+      
       const serviceAccount = {
         type: "service_account",
         project_id: process.env.FIREBASE_PROJECT_ID,
@@ -17,8 +25,8 @@ if (process.env.FIREBASE_PROJECT_ID &&
         private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
         client_email: process.env.FIREBASE_CLIENT_EMAIL,
         client_id: process.env.FIREBASE_CLIENT_ID,
-        auth_uri: process.env.FIREBASE_AUTH_URI,
-        token_uri: process.env.FIREBASE_TOKEN_URI,
+        auth_uri: process.env.FIREBASE_AUTH_URI || 'https://accounts.google.com/o/oauth2/auth',
+        token_uri: process.env.FIREBASE_TOKEN_URI || 'https://oauth2.googleapis.com/token',
       };
 
       admin.initializeApp({
@@ -27,14 +35,19 @@ if (process.env.FIREBASE_PROJECT_ID &&
       });
       
       firebaseInitialized = true;
-      console.log('Firebase Admin SDK initialized successfully');
+      console.log('✅ Firebase Admin SDK initialized successfully');
     }
   } catch (error) {
-    console.error('Firebase initialization failed:', error.message);
+    console.error('❌ Firebase initialization failed:', error.message);
+    console.error('Full error:', error);
     console.log('Running without Firebase authentication');
   }
 } else {
-  console.log('Firebase credentials not configured, running without authentication');
+  console.log('🔧 Firebase credentials not configured properly:');
+  console.log('- FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID ? '✅' : '❌');
+  console.log('- FIREBASE_PRIVATE_KEY:', process.env.FIREBASE_PRIVATE_KEY ? '✅' : '❌');
+  console.log('- FIREBASE_CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL ? '✅' : '❌');
+  console.log('Running without Firebase authentication');
 }
 
 // Middleware для перевірки токену
