@@ -17,7 +17,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Routes
-const generateRoute = require('./routes/generate'); // Повертаємо оригінальний
+const generateRoute = require('./routes/generate'); // Повертаємо оригінальний для продакшену
 const authRoute = require('./routes/auth');
 const projectsRoute = require('./routes/projects');
 
