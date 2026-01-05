@@ -1,25 +1,37 @@
 // utils/classify.js
 
-function extractBusinessType(text = '') {
+function extractBusinessTypes(text = '') {
   const t = text.toLowerCase();
+  const categories = [];
 
-const MAP = {
-  healthcare: /(лікар|лікарн|клінік|медич|медцентр|стомат|аптек|здоров|терап|hospital|clinic|medical|health|pharmacy)/,
-  coffee: /(кава|кав|кав['']ярн|кафе|coffee|cafe|espresso|latte|cappuccino|americano)/,
-  restaurant: /(ресторан|їжа|бар|піца|доставк|десерт|пекарн|кондитер|паб|кухн|смак|restaurant|food|pizza|bakery|bar|bistro)/,
-  it: /(it|tech|web|software|app|стартап|програм|айті|тех|розробк|сервіс|цифр|диджитал|digital|dev|coding|дев|AI)/,
-  creative: /(дизайн|портфоліо|art|design|creative|фото|студія|мист|архіт|креатив|галер|studio|photography|artist)/,
-  shop: /(магазин|shop|store|бренд|бренд\w*|одяг|одяг\w*|взутт|товар|торг|бутік|маркет|трц|fashion|boutique|market|goods)/i,
-  business: /(business|corporate|agency|consulting|bank|бізнес|корпор|агенц|консульт|банк|фінанс|інвест|офіс|фірм|менеджмент|invest|finance)/,
-  education: /(школ|курс|academy|education|навчан|універ|тренінг|вебінар|урок|вчит|освіт|school|university|training)/,
-  beauty: /(салон|beauty|spa|hair|барбер|макіяж|манікюр|космет|естети|вії|зачіск|makeup|cosmetic|barber|nails)/,
-};
+  const MAP = {
+    healthcare: /(лікар|лікарн|клінік|медич|медцентр|стомат|аптек|здоров|терап|hospital|clinic|medical|health|pharmacy)/,
+    food: /(кава|кав|кав['']ярн|кафе|ресторан|їжа|бар|піца|доставк|десерт|пекарн|кондитер|паб|кухн|смак|coffee|cafe|restaurant|food|pizza|bakery|bar|bistro)/,
+    it: /(it|tech|web|software|app|стартап|програм|айті|тех|розробк|сервіс|цифр|диджитал|digital|dev|coding|дев|AI)/,
+    creative: /(дизайн|портфоліо|art|design|creative|фото|студія|мист|архіт|креатив|галер|studio|photography|artist)/,
+    shop: /(магазин|shop|store|бренд|бренд\w*|одяг|одяг\w*|взутт|товар|торг|бутік|маркет|трц|fashion|boutique|market|goods|electronics|електрон|техніка)/,
+    business: /(business|corporate|agency|consulting|bank|бізнес|корпор|агенц|консульт|банк|фінанс|інвест|офіс|фірм|менеджмент|invest|finance|real estate|нерухом)/,
+    education: /(школ|курс|academy|education|навчан|універ|тренінг|вебінар|урок|вчит|освіт|school|university|training|language|мов)/,
+    beauty: /(салон|beauty|spa|hair|барбер|макіяж|манікюр|космет|естети|вії|зачіск|makeup|cosmetic|barber|nails)/,
+    lifestyle: /(фітнес|спорт|gym|тренажер|здоров|lifestyle|спортзал|тренування|fitness)/,
+    legal: /(нотар|юрист|адвокат|правов|legal|law|notary|юридич)/
+  };
 
+  // Збираємо всі категорії, що підходять
   for (const [type, rx] of Object.entries(MAP)) {
-    if (rx.test(t)) return type;
+    if (rx.test(t)) {
+      categories.push(type);
+    }
   }
 
-  return 'default';
+  // Якщо нічого не знайшли, повертаємо всі категорії для широкого пошуку
+  return categories.length > 0 ? categories : Object.keys(MAP);
+}
+
+// Залишаємо стару функцію для зворотної сумісності
+function extractBusinessType(text = '') {
+  const categories = extractBusinessTypes(text);
+  return categories.length > 0 ? categories[0] : 'default';
 }
 
 function autoDetectPreset(text = '') {
@@ -34,5 +46,6 @@ function autoDetectPreset(text = '') {
 
 module.exports = {
   extractBusinessType,
+  extractBusinessTypes,
   autoDetectPreset
 };

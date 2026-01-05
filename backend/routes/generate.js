@@ -2,64 +2,104 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
-// Тимчасово коментуємо embedding до встановлення pgvector
-// const { getEmbedding } = require('../services/embedding');
-const { extractBusinessType } = require('../utils/classify');
+const { getEmbedding } = require('../services/embedding');
+const { extractBusinessType, extractBusinessTypes } = require('../utils/classify');
 const { extractExplicitColors, contrast, getBetterContrast } = require('../utils/colors');
 const PRESETS = require('../utils/presets');
 const { applyTheme } = require('../utils/theme');
-// Тимчасово коментуємо до встановлення pgvector
-// const { searchTemplates } = require('../services/templates');
+const { searchTemplates } = require('../services/templates');
 
 function hasColorIntent(text) {
   return /(фон|background|текст|text|color|колір|червоний|синій|зелений|жовтий|red|blue|green|yellow)/i.test(text);
 }
 
-// Простий пошук шаблонів без embedding
-async function searchTemplatesByKeywords(pool, category, userText) {
+// Гібридний пошук: embedding + scoring система
+async function hybridTemplateSearch(pool, categories, userText) {
   try {
-    let query = 'SELECT * FROM templates';
-    let params = [];
+    console.log('Starting hybrid search for categories:', categories);
     
-    if (category) {
-      query += ' WHERE category = $1';
-      params.push(category);
+    // Спочатку пробуємо embedding пошук
+    let embeddingResults = [];
+    try {
+      embeddingResults = await searchTemplates(pool, userText, 10); // Отримуємо топ-10 по embedding
+      console.log(`Embedding search returned ${embeddingResults.length} results`);
+    } catch (embeddingError) {
+      console.log('Embedding search failed, falling back to keyword search:', embeddingError.message);
     }
     
-    query += ' ORDER BY created_at DESC LIMIT 5';
-    
-    const result = await pool.query(query, params);
-    
-    if (result.rows.length === 0) {
-      // Якщо немає шаблонів по категорії, беремо будь-який
-      const fallbackResult = await pool.query('SELECT * FROM templates ORDER BY created_at DESC LIMIT 1');
-      return fallbackResult.rows[0] || null;
-    }
-    
-    // Простий пошук по ключовим словам
-    const userWords = userText.toLowerCase().split(/\s+/);
-    let bestTemplate = result.rows[0];
-    let bestScore = 0;
-    
-    for (const template of result.rows) {
-      const templateKeywords = (template.keywords || '').toLowerCase();
-      let score = 0;
+    // Якщо embedding не спрацював або дав мало результатів, додаємо всі шаблони
+    if (embeddingResults.length < 5) {
+      const allTemplatesResult = await pool.query('SELECT * FROM templates ORDER BY created_at DESC');
+      const allTemplates = allTemplatesResult.rows;
       
+      // Додаємо шаблони, яких немає в embedding результатах
+      const embeddingIds = new Set(embeddingResults.map(t => t.id));
+      const additionalTemplates = allTemplates.filter(t => !embeddingIds.has(t.id));
+      embeddingResults = [...embeddingResults, ...additionalTemplates];
+      
+      console.log(`Added ${additionalTemplates.length} additional templates, total: ${embeddingResults.length}`);
+    }
+    
+    if (embeddingResults.length === 0) {
+      console.log('No templates found in database');
+      return null;
+    }
+    
+    // Підготавливаємо слова для scoring
+    const userWords = userText.toLowerCase()
+      .split(/[\s,]+/)
+      .map(w => w.trim())
+      .filter(w => w.length > 2);
+    
+    console.log('User words for scoring:', userWords);
+    
+    // Застосовуємо scoring до результатів
+    const scoredTemplates = embeddingResults.map(template => {
+      let score = template.similarity || 0; // Базовий score від embedding (якщо є)
+      const templateName = (template.name || '').toLowerCase();
+      const templateKeywords = (template.keywords || '').toLowerCase();
+      const templateCategory = template.category || '';
+      
+      // +2 балла якщо категорія співпала
+      if (categories.includes(templateCategory)) {
+        score += 2;
+        console.log(`Template "${template.name}" +2 for category match: ${templateCategory}`);
+      }
+      
+      // Перевіряємо кожне слово користувача
       for (const word of userWords) {
-        if (word.length > 2 && templateKeywords.includes(word)) {
-          score++;
+        // +2 балла якщо слово є в назві шаблону
+        if (templateName.includes(word)) {
+          score += 2;
+          console.log(`Template "${template.name}" +2 for name match: ${word}`);
+        }
+        
+        // +1 бал якщо слово є в ключових словах
+        if (templateKeywords.includes(word)) {
+          score += 1;
+          console.log(`Template "${template.name}" +1 for keyword match: ${word}`);
         }
       }
       
-      if (score > bestScore) {
-        bestScore = score;
-        bestTemplate = template;
-      }
-    }
+      return { ...template, finalScore: score };
+    });
+    
+    // Сортуємо по фінальному score (по убуванню)
+    scoredTemplates.sort((a, b) => b.finalScore - a.finalScore);
+    
+    console.log('Top 5 templates by hybrid score:');
+    scoredTemplates.slice(0, 5).forEach(t => {
+      console.log(`- ${t.name} (${t.category}): ${t.finalScore} points (embedding: ${t.similarity || 0})`);
+    });
+    
+    // Повертаємо найкращий шаблон
+    const bestTemplate = scoredTemplates[0];
+    console.log(`Selected template: ${bestTemplate.name} with final score ${bestTemplate.finalScore}`);
     
     return bestTemplate;
+    
   } catch (error) {
-    console.error('Error searching templates:', error);
+    console.error('Error in hybrid search:', error);
     throw error;
   }
 }
@@ -87,21 +127,15 @@ router.post('/', async (req, res) => {
       });
     }
 
-    let category = extractBusinessType(userText);
-    console.log('Extracted category:', category);
+    let categories = extractBusinessTypes(userText);
+    console.log('Extracted categories:', categories);
 
-    // Використовуємо простий пошук замість embedding
-    let template = await searchTemplatesByKeywords(pool, category, userText);
-    console.log('Template by category:', category, template ? template.id : 'NOT FOUND');
-
-    if (!template) {
-      console.log('Fallback to any available template');
-      template = await searchTemplatesByKeywords(pool, null, userText);
-      console.log('Template by fallback:', template ? template.id : 'NOT FOUND');
-    }
+    // Використовуємо гібридний пошук: embedding + scoring
+    let template = await hybridTemplateSearch(pool, categories, userText);
+    console.log('Selected template:', template ? `${template.name} (${template.category})` : 'NOT FOUND');
 
     if (!template) {
-      console.log('No templates found in database');
+      console.log('No templates found in database at all');
       return res.status(404).json({ 
         success: false, 
         error: 'No suitable template found. Please try different keywords or contact support.' 

@@ -131,9 +131,12 @@ export default function History() {
                 </button>
 
                 <button
-                  onClick={() => navigate('/editor', {
-                    state: { template: item.template, historyId: item.id }
-                  })}
+                  onClick={() => {
+                    console.log('Opening template:', item.template);
+                    navigate('/editor', {
+                      state: { template: item.template, historyId: item.id }
+                    });
+                  }}
                   className="btn-open"
                 >
                   Відкрити

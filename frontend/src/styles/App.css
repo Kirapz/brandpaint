@@ -8,6 +8,11 @@ html, body, #root {
   box-sizing: border-box; /* для зручності розмірів */
 }
 
+/* CSS змінні */
+:root {
+  --navbar-height: 64px; /* Висота навбару */
+}
+
 /* Корінь аплікації */
 .app-root {
   min-height: 100vh; /* мінімальна висота на весь екран */

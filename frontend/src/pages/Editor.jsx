@@ -201,7 +201,7 @@ export default function EditorPage() {
               title="preview"
               srcDoc={srcDoc}
               className="mobile-preview-iframe"
-              sandbox="allow-scripts allow-same-origin allow-forms"
+              sandbox="allow-scripts"
             />
           </div>
         )}
@@ -264,7 +264,7 @@ export default function EditorPage() {
             title="preview"
             srcDoc={srcDoc}
             className={`preview-iframe ${previewMode} ${previewFullscreen ? 'fullscreen-mode' : ''}`}
-            sandbox="allow-scripts allow-same-origin allow-forms"
+            sandbox="allow-scripts"
           />
         </div>
       </div>
