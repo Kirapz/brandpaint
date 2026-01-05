@@ -4,55 +4,23 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Middleware - CORS має бути ПЕРШИМ!
-app.use((req, res, next) => {
-  const allowedOrigins = [
+// CORS - тільки один middleware!
+app.use(cors({
+  origin: [
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://brandpaint.onrender.com',
-    'https://brandpaint2.onrender.com'
-  ];
-  
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  
-  // Handle preflight
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-  
-  next();
-});
-
-app.use(cors({
-  origin: function (origin, callback) {
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'https://brandpaint.onrender.com',
-      'https://brandpaint2.onrender.com'
-    ];
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+    'https://brandpaint.onrender.com'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
-})); 
+}));
+
 app.use(express.json({ limit: '10mb' })); 
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Routes
-const generateRoute = require('./routes/generate'); // Повертаємо оригінальний для продакшену
+const generateRoute = require('./routes/generate');
 const authRoute = require('./routes/auth');
 const projectsRoute = require('./routes/projects');
 
@@ -93,7 +61,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler - має бути в самому кінці
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({ 
     success: false, 

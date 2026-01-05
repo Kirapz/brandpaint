@@ -41,17 +41,11 @@ export const generateLayout = async (data) => {
   console.log('CALLING BACKEND', API_BASE);
 
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30_000); // 30s timeout
-
     const resp = await fetch(`${API_BASE}/api/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
-      signal: controller.signal,
     });
-
-    clearTimeout(timeout);
 
     if (!resp.ok) {
       const text = await resp.text();
