@@ -57,9 +57,9 @@ async function hybridTemplateSearch(pool, categories, userText) {
       const templateKeywords = (template.keywords || '').toLowerCase();
       const templateCategory = template.category || '';
       
-      // +2 балла якщо категорія співпала
+      // +3 балла якщо категорія співпала (збільшили з 2)
       if (categories.includes(templateCategory)) {
-        score += 2;
+        score += 3;
       }
       
       // Перевіряємо кожне слово користувача
@@ -73,6 +73,12 @@ async function hybridTemplateSearch(pool, categories, userText) {
         if (templateKeywords.includes(word)) {
           score += 1;
         }
+      }
+      
+      // Додатковий бонус для coffee/кава → coffee shop
+      if ((userText.includes('кава') || userText.includes('coffee')) && 
+          (templateName.includes('coffee') || templateKeywords.includes('coffee'))) {
+        score += 3;
       }
       
       return { ...template, finalScore: score };
@@ -100,7 +106,24 @@ async function hybridTemplateSearch(pool, categories, userText) {
 
 router.post('/', async (req, res) => {
   try {
-    const { description = '', keywords = [], brandName = '', preset = 'default' } = req.body;
+    const { description = '', keywords = [], brandName = '', preset = 'default', templateId } = req.body;
+    
+    // 🔥 Якщо запит з історії або є templateId - швидко повертаємо шаблон
+    if (templateId) {
+      console.log('Fast path: loading template by ID:', templateId);
+      const result = await pool.query('SELECT * FROM templates WHERE id = $1', [templateId]);
+      if (result.rows.length) {
+        const template = result.rows[0];
+        return res.json({
+          success: true,
+          data: {
+            html: template.html_content,
+            css: template.css_content
+          }
+        });
+      }
+    }
+    
     const userText = `${description} ${keywords.join(' ')}`.trim();
 
     console.log('\n=== NEW QUERY ===');
