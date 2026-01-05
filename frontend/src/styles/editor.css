@@ -259,3 +259,71 @@
     display: none;
   }
 }
+  .mobile-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .mobile-code-controls {
+    padding: 8px 16px;
+    background: #2d2d30;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    overflow-x: auto;
+    border-bottom: 1px solid #333;
+  }
+
+  .mobile-editor-wrap {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .mobile-preview-section {
+    flex: 1;
+    background: #f0f0f0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mobile-preview-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #fff;
+  }
+
+  /* Адаптуємо кнопки для мобільного */
+  .editor-tab {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .btn-export, .btn-reset {
+    padding: 6px 8px;
+    font-size: 11px;
+    min-width: auto;
+  }
+
+  .btn-export {
+    background: #28a745;
+  }
+
+  .btn-reset {
+    background: #dc3545;
+  }
+
+  /* Приховуємо десктопні елементи на мобільному */
+  .editor-workspace {
+    display: none !important;
+  }
+}
+
+/* Десктопні стилі залишаються без змін */
+@media (min-width: 769px) {
+  .editor-page.mobile {
+    display: none;
+  }

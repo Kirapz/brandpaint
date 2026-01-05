@@ -5,7 +5,8 @@ function extractBusinessType(text = '') {
 
 const MAP = {
   healthcare: /(лікар|лікарн|клінік|медич|медцентр|стомат|аптек|здоров|терап|hospital|clinic|medical|health|pharmacy)/,
-  food: /(кава|кав|кав['’]ярн|кафе|ресторан|їжа|бар|піца|доставк|десерт|пекарн|кондитер|паб|кухн|смак|coffee|cafe|restaurant|food|pizza|bakery|bar)/,
+  coffee: /(кава|кав|кав['']ярн|кафе|coffee|cafe|espresso|latte|cappuccino|americano)/,
+  restaurant: /(ресторан|їжа|бар|піца|доставк|десерт|пекарн|кондитер|паб|кухн|смак|restaurant|food|pizza|bakery|bar|bistro)/,
   it: /(it|tech|web|software|app|стартап|програм|айті|тех|розробк|сервіс|цифр|диджитал|digital|dev|coding|дев|AI)/,
   creative: /(дизайн|портфоліо|art|design|creative|фото|студія|мист|архіт|креатив|галер|studio|photography|artist)/,
   shop: /(магазин|shop|store|бренд|бренд\w*|одяг|одяг\w*|взутт|товар|торг|бутік|маркет|трц|fashion|boutique|market|goods)/i,

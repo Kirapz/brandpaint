@@ -5,7 +5,7 @@ const pool = require('../db');
 // Тимчасово коментуємо embedding до встановлення pgvector
 // const { getEmbedding } = require('../services/embedding');
 const { extractBusinessType } = require('../utils/classify');
-const { extractExplicitColors, contrast } = require('../utils/colors');
+const { extractExplicitColors, contrast, getBetterContrast } = require('../utils/colors');
 const PRESETS = require('../utils/presets');
 const { applyTheme } = require('../utils/theme');
 // Тимчасово коментуємо до встановлення pgvector
@@ -128,10 +128,15 @@ router.post('/', async (req, res) => {
       }
       // є intent — застосувати тільки кольори (без preset styles)
       const bg = userColors.bg ?? '#ffffff';
-      let text = userColors.text ?? contrast(bg);
-      if (text === bg) text = contrast(bg);
+      let text = userColors.text ?? getBetterContrast(bg);
+      
+      // Якщо текст і фон однакові, використовуємо автоматичний контраст
+      if (text === bg) {
+        text = contrast(bg);
+      }
+      
       const accent = bg;
-      const buttonText = contrast(accent);
+      const buttonText = getBetterContrast(accent);
       const palette = { bg, text, accent, buttonText };
       console.log('Palette applied (default preset with color intent):', palette);
 
@@ -145,10 +150,15 @@ router.post('/', async (req, res) => {
       palette = { bg: '#ffffff', text: '#020617', accent: '#020617', buttonText: '#020617' };
     } else {
       const bg = userColors.bg ?? '#ffffff';
-      let text = userColors.text ?? contrast(bg);
-      if (text === bg) text = contrast(bg);
+      let text = userColors.text ?? getBetterContrast(bg);
+      
+      // Якщо текст і фон однакові, використовуємо автоматичний контраст
+      if (text === bg) {
+        text = contrast(bg);
+      }
+      
       const accent = bg;
-      const buttonText = contrast(accent);
+      const buttonText = getBetterContrast(accent);
       palette = { bg, text, accent, buttonText };
     }
     console.log('Final palette for non-default preset:', palette);
