@@ -18,39 +18,66 @@ const Generator = () => {
     setLoading(true);
     
     try {
-      // Тепер відправляємо і brandName, і preset
+      console.log('Відправляємо запит на генерацію:', { 
+        brandName,
+        description, 
+        keywords: keywords.split(',').map(k => k.trim()).filter(Boolean),
+        preset
+      });
+
       const result = await generateLayout({ 
         brandName,
         description, 
-         keywords: keywords.split(',').map(k => k.trim()).filter(Boolean),
+        keywords: keywords.split(',').map(k => k.trim()).filter(Boolean),
         preset
       });
+
+      console.log('Отримали результат:', result);
 
       if (result.success) {
         // save to firebase history if user is logged in
         if (user && user.uid) {
-          // payload: зберігаємо description, brandName, preset і сам згенерований шаблон
-          await saveHistoryForUser(user.uid, {
-            title: brandName || (description || '').slice(0, 50),
-            description,
-            preset,
-            keywords: keywords.split(',').map(k=>k.trim()).filter(Boolean),
-            template: result.data, // зберігаємо об'єкт шаблону (HTML/CSS) — обережно з розміром
-          });
+          try {
+            await saveHistoryForUser(user.uid, {
+              title: brandName || (description || '').slice(0, 50),
+              description,
+              preset,
+              keywords: keywords.split(',').map(k=>k.trim()).filter(Boolean),
+              template: result.data,
+            });
+            console.log('Збережено в історію');
+          } catch (historyError) {
+            console.error('Помилка збереження в історію:', historyError);
+            // Не блокуємо процес, якщо історія не збереглася
+          }
         }
 
         navigate('/editor?' + Date.now(), {
           state: { template: result.data }
         });
+      } else {
+        throw new Error(result.error || 'Невідома помилка генерації');
       }
       
     } catch (error) {
-      alert('Сталася помилка при генерації');
-      console.error(error);
+      console.error('Помилка генерації:', error);
+      
+      let errorMessage = 'Сталася помилка при генерації';
+      
+      if (error.message.includes('fetch')) {
+        errorMessage = 'Не вдається підключитися до сервера. Перевірте інтернет-з\'єднання.';
+      } else if (error.message.includes('404')) {
+        errorMessage = 'Шаблон не знайдено. Спробуйте інші ключові слова.';
+      } else if (error.message.includes('500')) {
+        errorMessage = 'Помилка сервера. Спробуйте пізніше.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
-    
   };
 
   return (

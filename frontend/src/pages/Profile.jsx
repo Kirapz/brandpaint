@@ -7,6 +7,7 @@ import { updateProfile as fbUpdateProfile } from 'firebase/auth';
 export default function Profile() {
   const { user } = useAuth();
   const [profile, setProfile] = useState({ name: '', role: '' });
+  const [originalProfile, setOriginalProfile] = useState({ name: '', role: '' });
   const [count, setCount] = useState(0);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -29,10 +30,12 @@ export default function Profile() {
         // 2) мета-профіль з Firestore
         const p = await getUserProfile(user.uid);
         if (!mounted) return;
-        setProfile({
+        const profileData = {
           name: p?.name ?? (user.displayName ?? ''),
           role: p?.role ?? ''
-        });
+        };
+        setProfile(profileData);
+        setOriginalProfile(profileData);
       } catch (e) {
         console.error('Failed to load profile', e);
       } finally {
@@ -59,6 +62,7 @@ export default function Profile() {
       }
 
       setEditing(false);
+      setOriginalProfile(profile);
       alert('Профіль успішно збережено');
     } catch (e) {
       console.error(e);
@@ -118,7 +122,10 @@ export default function Profile() {
                   <button onClick={save} disabled={saving} style={{ marginRight: 8 }}>
                     {saving ? 'Зберігаю...' : 'Зберегти'}
                   </button>
-                  <button onClick={() => { setEditing(false);  }}>
+                  <button onClick={() => { 
+                    setProfile(originalProfile); 
+                    setEditing(false);  
+                  }}>
                     Скасувати
                   </button>
                 </>

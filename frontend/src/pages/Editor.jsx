@@ -24,13 +24,10 @@ const buildDoc = (html, css) => {
         <meta charset="UTF-8" />
         <style>${css || ''}</style>
         <script>
-          // Скрипт для блокування переходів та дій всередині прев'ю
           document.addEventListener('click', function(e) {
-            // Зупиняємо дію за замовчуванням (перехід за посиланням, сабміт форми)
             e.preventDefault();
-            // Зупиняємо подальше розповсюдження події
             e.stopPropagation();
-          }, true); // 'true' вмикає режим перехоплення (capture)
+          }, true);
         </script>
       </head>
       <body>
@@ -61,6 +58,17 @@ export default function EditorPage() {
   const [activeTab, setActiveTab] = useState(saved?.activeTab || 'html');
   const [previewMode, setPreviewMode] = useState('desktop');
   const [previewFullscreen, setPreviewFullscreen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [mobileView, setMobileView] = useState('code'); // 'code' або 'preview'
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (location.state?.template) {
@@ -127,6 +135,81 @@ export default function EditorPage() {
     URL.revokeObjectURL(a.href);
   };
 
+  // Мобільна версія
+  if (isMobile) {
+    return (
+      <div className="editor-page mobile">
+        <div className="editor-topbar mobile">
+          <button onClick={handleBack} className="back-link">← Назад</button>
+          
+          <div className="mobile-view-toggle">
+            <button 
+              onClick={() => setMobileView('code')} 
+              className={`mobile-tab ${mobileView === 'code' ? 'active' : ''}`}
+            >
+              Код
+            </button>
+            <button 
+              onClick={() => setMobileView('preview')} 
+              className={`mobile-tab ${mobileView === 'preview' ? 'active' : ''}`}
+            >
+              Шаблон
+            </button>
+          </div>
+        </div>
+
+        {mobileView === 'code' && (
+          <div className="mobile-code-section">
+            <div className="mobile-code-controls">
+              <button 
+                onClick={() => setActiveTab('html')} 
+                className={`editor-tab ${activeTab === 'html' ? 'active' : ''}`}
+              >HTML</button>
+              <button 
+                onClick={() => setActiveTab('css')} 
+                className={`editor-tab ${activeTab === 'css' ? 'active' : ''}`}
+              >CSS</button>
+              
+              <button onClick={() => downloadFile(htmlCode, 'index', 'text/html')} className="btn-export">⬇ HTML</button>
+              <button onClick={() => downloadFile(cssCode, 'style', 'text/css')} className="btn-export">⬇ CSS</button>
+              <button onClick={handleReset} className="btn-reset">⟲</button>
+            </div>
+            
+            <div className="mobile-editor-wrap">
+              <Monaco
+                height="100%"
+                theme="vs-dark"
+                language={activeTab}
+                value={activeTab === 'html' ? htmlCode : cssCode}
+                onChange={(v) => activeTab === 'html' ? setHtmlCode(v ?? '') : setCssCode(v ?? '')}
+                onMount={(editor) => { editorRef.current = editor; editor.layout(); }}
+                options={{ 
+                  minimap: { enabled: false }, 
+                  automaticLayout: true, 
+                  wordWrap: 'on',
+                  fontSize: 14,
+                  scrollBeyondLastLine: false
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {mobileView === 'preview' && (
+          <div className="mobile-preview-section">
+            <iframe
+              title="preview"
+              srcDoc={srcDoc}
+              className="mobile-preview-iframe"
+              sandbox="allow-scripts allow-same-origin allow-forms"
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Десктопна версія
   return (
     <div className="editor-page">
       <div className="editor-topbar">
@@ -165,7 +248,7 @@ export default function EditorPage() {
         {!previewFullscreen && (
           <div className="editor-wrap">
             <Monaco
-              height="100%"srcDoc
+              height="100%"
               theme="vs-dark"
               language={activeTab}
               value={activeTab === 'html' ? htmlCode : cssCode}
