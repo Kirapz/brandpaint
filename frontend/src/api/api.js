@@ -1,5 +1,7 @@
 // frontend/src/api/api.js
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { API_BASE_URL } from '../config/api.js';
+
+const API_BASE = API_BASE_URL;
 
 // Функція для отримання токену з Firebase
 const getAuthToken = async () => {

@@ -8,13 +8,25 @@ const port = process.env.PORT || 5000;
 app.use(cors({
   origin: [
     'http://localhost:5173', // для локальної розробки
+    'http://localhost:3000', // альтернативний локальний порт
     'https://brandpaint.onrender.com', // твій фронтенд на Render
-    'https://your-custom-domain.com' // якщо буде власний домен
+    'https://brandpaint2.onrender.com' // на всякий випадок, якщо бекенд теж може бути фронтендом
   ],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 })); 
 app.use(express.json({ limit: '10mb' })); 
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Додаткова обробка preflight запитів
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(200);
+});
 
 // Routes
 const generateRoute = require('./routes/generate'); // Повертаємо оригінальний для продакшену
