@@ -4,13 +4,19 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
 
+// Trust proxy для Render
+app.set('trust proxy', 1);
+
 // CORS - максимально простий і дозволяє все
 app.use(cors({
-  origin: '*', // Дозволяємо всі origins для тестування
+  origin: '*',
   credentials: false,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Явна обробка preflight OPTIONS
+app.options('*', cors());
 
 app.use(express.json({ limit: '10mb' })); 
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

@@ -41,9 +41,14 @@ export const generateLayout = async (data) => {
   console.log('CALLING BACKEND', API_BASE);
 
   try {
+    const token = await getAuthToken();
+    
     const resp = await fetch(`${API_BASE}/api/generate`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
       body: JSON.stringify(data),
     });
 

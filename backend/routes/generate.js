@@ -18,26 +18,23 @@ async function hybridTemplateSearch(pool, categories, userText) {
   try {
     console.log('Starting hybrid search for categories:', categories);
     
-    // Спочатку пробуємо embedding пошук
+    // Спочатку пробуємо embedding пошук з timeout
     let embeddingResults = [];
     try {
-      embeddingResults = await searchTemplates(pool, userText, 10); // Отримуємо топ-10 по embedding
-      console.log(`Embedding search returned ${embeddingResults.length} results`);
+      console.log('Attempting embedding search...');
+      const embeddingPromise = searchTemplates(pool, userText, 10);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Embedding timeout')), 10000) // 10s timeout
+      );
+      
+      embeddingResults = await Promise.race([embeddingPromise, timeoutPromise]);
+      console.log(`✅ Embedding search returned ${embeddingResults.length} results`);
     } catch (embeddingError) {
-      console.log('Embedding search failed, falling back to keyword search:', embeddingError.message);
-    }
-    
-    // Якщо embedding не спрацював або дав мало результатів, додаємо всі шаблони
-    if (embeddingResults.length < 5) {
+      console.warn('⚠️ Embedding search failed, using keyword-only search:', embeddingError.message);
+      // Fallback: отримуємо всі шаблони для keyword search
       const allTemplatesResult = await pool.query('SELECT * FROM templates ORDER BY created_at DESC');
-      const allTemplates = allTemplatesResult.rows;
-      
-      // Додаємо шаблони, яких немає в embedding результатах
-      const embeddingIds = new Set(embeddingResults.map(t => t.id));
-      const additionalTemplates = allTemplates.filter(t => !embeddingIds.has(t.id));
-      embeddingResults = [...embeddingResults, ...additionalTemplates];
-      
-      console.log(`Added ${additionalTemplates.length} additional templates, total: ${embeddingResults.length}`);
+      embeddingResults = allTemplatesResult.rows;
+      console.log(`Using ${embeddingResults.length} templates for keyword search`);
     }
     
     if (embeddingResults.length === 0) {
@@ -63,7 +60,6 @@ async function hybridTemplateSearch(pool, categories, userText) {
       // +2 балла якщо категорія співпала
       if (categories.includes(templateCategory)) {
         score += 2;
-        console.log(`Template "${template.name}" +2 for category match: ${templateCategory}`);
       }
       
       // Перевіряємо кожне слово користувача
@@ -71,13 +67,11 @@ async function hybridTemplateSearch(pool, categories, userText) {
         // +2 балла якщо слово є в назві шаблону
         if (templateName.includes(word)) {
           score += 2;
-          console.log(`Template "${template.name}" +2 for name match: ${word}`);
         }
         
         // +1 бал якщо слово є в ключових словах
         if (templateKeywords.includes(word)) {
           score += 1;
-          console.log(`Template "${template.name}" +1 for keyword match: ${word}`);
         }
       }
       
@@ -89,17 +83,17 @@ async function hybridTemplateSearch(pool, categories, userText) {
     
     console.log('Top 5 templates by hybrid score:');
     scoredTemplates.slice(0, 5).forEach(t => {
-      console.log(`- ${t.name} (${t.category}): ${t.finalScore} points (embedding: ${t.similarity || 0})`);
+      console.log(`- ${t.name} (${t.category}): ${t.finalScore} points`);
     });
     
     // Повертаємо найкращий шаблон
     const bestTemplate = scoredTemplates[0];
-    console.log(`Selected template: ${bestTemplate.name} with final score ${bestTemplate.finalScore}`);
+    console.log(`✅ Selected template: ${bestTemplate.name} with final score ${bestTemplate.finalScore}`);
     
     return bestTemplate;
     
   } catch (error) {
-    console.error('Error in hybrid search:', error);
+    console.error('❌ Error in hybrid search:', error);
     throw error;
   }
 }
