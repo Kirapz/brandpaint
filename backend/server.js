@@ -4,20 +4,22 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
 
-// CORS - тільки один middleware!
+// CORS - максимально простий і дозволяє все
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://brandpaint.onrender.com'
-  ],
-  credentials: true,
+  origin: '*', // Дозволяємо всі origins для тестування
+  credentials: false,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json({ limit: '10mb' })); 
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Логування всіх запитів
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url} from ${req.headers.origin}`);
+  next();
+});
 
 // Routes
 const generateRoute = require('./routes/generate');
