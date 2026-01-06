@@ -1,7 +1,7 @@
 // utils/colors.js
 const COLORS = {
   // Основні кольори
-  black: { hex: '#020617', rx: /(чорн|black)/i },
+  black: { hex: '#000000', rx: /(чорн|black)/i },
   white: { hex: '#ffffff', rx: /(білий|white)/i },
   
   // Червоні відтінки
@@ -73,7 +73,7 @@ const COLORS = {
   
   // Світлі варіанти
   light: { hex: '#f8fafc', rx: /(світл|light)(?!\s*(?:червон|рожев|помаранчев|жовт|зелен|син|фіолет|коричнев|сір))/i },
-  dark: { hex: '#1e293b', rx: /(темн|dark)(?!\s*(?:червон|рожев|помаранчев|жовт|зелен|син|фіолет|коричнев|сір))/i },
+  dark: { hex: '#000000', rx: /(темн|dark)(?!\s*(?:червон|рожев|помаранчев|жовт|зелен|син|фіолет|коричнев|сір))/i },
 };
 
 function findColor(word) {
@@ -237,7 +237,7 @@ function extractExplicitColors(text = '') {
 }
 
 function contrast(hex) {
-  if (!hex || hex === 'null' || hex === null) return '#020617';
+  if (!hex || hex === 'null' || hex === null) return '#000000';
   
   // Парсимо hex колір
   const cleanHex = hex.replace('#', '');
@@ -251,8 +251,8 @@ function contrast(hex) {
   
   // Більш гнучкий підхід до вибору контрастного кольору
   if (luminance > 0.7) {
-    // Дуже світлий фон - використовуємо темний текст
-    return '#020617';
+    // Дуже світлий фон - використовуємо чорний текст
+    return '#000000';
   } else if (luminance > 0.5) {
     // Середньо-світлий фон - використовуємо темний текст
     return '#1e293b';
@@ -267,7 +267,7 @@ function contrast(hex) {
 
 // Додаткова функція для отримання кращого контрасту
 function getBetterContrast(bgHex, preferredTextHex = null) {
-  if (!bgHex) return '#020617';
+  if (!bgHex) return '#000000';
   
   // Якщо є бажаний колір тексту, перевіряємо чи він достатньо контрастний
   if (preferredTextHex) {

@@ -141,6 +141,11 @@ export default function EditorPage() {
 
   const srcDoc = useMemo(() => buildDoc(htmlCode, cssCode), [htmlCode, cssCode]);
 
+  // Key для iframe щоб форсувати повний перерендер при зміні контенту
+  const iframeKey = useMemo(() => {
+    return `iframe-${htmlCode.length}-${cssCode.length}`;
+  }, [htmlCode, cssCode]);
+
   // Форсуємо перерендер iframe при зміні контенту
   useEffect(() => {
     if (iframeRef.current && srcDoc) {
@@ -302,6 +307,7 @@ export default function EditorPage() {
 
         <div className="preview-wrap">
           <iframe
+            key={iframeKey}
             ref={iframeRef}
             title="preview"
             srcDoc={srcDoc}
