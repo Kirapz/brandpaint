@@ -13,7 +13,7 @@ const embeddingCache = new Map();
 
 async function cachedSearchTemplates(pool, text) {
   if (embeddingCache.has(text)) {
-    console.log('✅ Cache hit');
+    console.log(' Cache hit');
     return embeddingCache.get(text);
   }
   
@@ -90,7 +90,7 @@ function scoreAndSelectTemplate(templates, categories, userText) {
     return (b.similarity || 0) - (a.similarity || 0);
   });
   
-  console.log('🏆 Top 3:', scoredTemplates.slice(0, 3).map(t => 
+  console.log(' Top 3:', scoredTemplates.slice(0, 3).map(t => 
     `${t.name} (${t.category}): ${t.finalScore}`
   ));
   
@@ -106,7 +106,7 @@ async function hybridTemplateSearch(pool, categories, userText) {
     
     // Вимикаємо embedding на production через OOM
     if (process.env.NODE_ENV === 'production') {
-      console.log('⚠️ Production mode: keyword-only search');
+      console.log(' Production mode: keyword-only search');
       const result = await pool.query(
         'SELECT id, name, category, keywords, html_content, css_content FROM templates LIMIT 30'
       );
@@ -114,7 +114,7 @@ async function hybridTemplateSearch(pool, categories, userText) {
     } else {
       // Локально можна спробувати embedding
       if (userText.length < 5) {
-        console.log('⚠️ Text too short, keyword-only');
+        console.log(' Text too short, keyword-only');
         const result = await pool.query(
           'SELECT id, name, category, keywords, html_content, css_content FROM templates LIMIT 30'
         );
@@ -128,9 +128,9 @@ async function hybridTemplateSearch(pool, categories, userText) {
         );
         
         embeddingResults = await Promise.race([embeddingPromise, timeoutPromise]);
-        console.log(`✅ Embedding: ${embeddingResults.length}`);
+        console.log(` Embedding: ${embeddingResults.length}`);
       } catch (embeddingError) {
-        console.warn('⚠️ Embedding failed, keyword search');
+        console.warn(' Embedding failed, keyword search');
         const result = await pool.query(
           'SELECT id, name, category, keywords, html_content, css_content FROM templates LIMIT 30'
         );
@@ -145,7 +145,7 @@ async function hybridTemplateSearch(pool, categories, userText) {
     return scoreAndSelectTemplate(embeddingResults, categories, userText);
     
   } catch (error) {
-    console.error('❌ Search error:', error);
+    console.error(' Search error:', error);
     throw error;
   }
 }

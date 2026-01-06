@@ -1,12 +1,16 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Monaco, { loader } from '@monaco-editor/react';
 import { useAuth } from '../context/AuthContext';
 import { updateHistoryForUser } from '../firebase';
 
-loader.config({
-  paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs' }
-});
+// Lazy load Monaco для швидшого першого рендеру
+const Monaco = React.lazy(() => import('@monaco-editor/react').then(module => {
+  // Конфігуруємо loader після імпорту
+  module.loader.config({
+    paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs' }
+  });
+  return { default: module.default };
+}));
 
 const STORAGE_KEY = 'brandpaint_editor_v6';
 const ORIGINAL_KEY = 'brandpaint_original_v6';
@@ -176,21 +180,23 @@ export default function EditorPage() {
             </div>
             
             <div className="mobile-editor-wrap">
-              <Monaco
-                height="100%"
-                theme="vs-dark"
-                language={activeTab}
-                value={activeTab === 'html' ? htmlCode : cssCode}
-                onChange={(v) => activeTab === 'html' ? setHtmlCode(v ?? '') : setCssCode(v ?? '')}
-                onMount={(editor) => { editorRef.current = editor; editor.layout(); }}
-                options={{ 
-                  minimap: { enabled: false }, 
-                  automaticLayout: true, 
-                  wordWrap: 'on',
-                  fontSize: 14,
-                  scrollBeyondLastLine: false
-                }}
-              />
+              <Suspense fallback={<div style={{color: '#fff', padding: '20px'}}>Завантаження редактора...</div>}>
+                <Monaco
+                  height="100%"
+                  theme="vs-dark"
+                  language={activeTab}
+                  value={activeTab === 'html' ? htmlCode : cssCode}
+                  onChange={(v) => activeTab === 'html' ? setHtmlCode(v ?? '') : setCssCode(v ?? '')}
+                  onMount={(editor) => { editorRef.current = editor; editor.layout(); }}
+                  options={{ 
+                    minimap: { enabled: false }, 
+                    automaticLayout: true, 
+                    wordWrap: 'on',
+                    fontSize: 14,
+                    scrollBeyondLastLine: false
+                  }}
+                />
+              </Suspense>
             </div>
           </div>
         )}
@@ -247,15 +253,17 @@ export default function EditorPage() {
       <div className={`editor-workspace ${previewFullscreen ? 'fullscreen' : ''}`}>
         {!previewFullscreen && (
           <div className="editor-wrap">
-            <Monaco
-              height="100%"
-              theme="vs-dark"
-              language={activeTab}
-              value={activeTab === 'html' ? htmlCode : cssCode}
-              onChange={(v) => activeTab === 'html' ? setHtmlCode(v ?? '') : setCssCode(v ?? '')}
-              onMount={(editor) => { editorRef.current = editor; editor.layout(); }}
-              options={{ minimap: { enabled: false }, automaticLayout: true, wordWrap: 'on' }}
-            />
+            <Suspense fallback={<div style={{color: '#fff', padding: '20px'}}>Завантаження редактора...</div>}>
+              <Monaco
+                height="100%"
+                theme="vs-dark"
+                language={activeTab}
+                value={activeTab === 'html' ? htmlCode : cssCode}
+                onChange={(v) => activeTab === 'html' ? setHtmlCode(v ?? '') : setCssCode(v ?? '')}
+                onMount={(editor) => { editorRef.current = editor; editor.layout(); }}
+                options={{ minimap: { enabled: false }, automaticLayout: true, wordWrap: 'on' }}
+              />
+            </Suspense>
           </div>
         )}
 
