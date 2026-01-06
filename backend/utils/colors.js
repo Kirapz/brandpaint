@@ -58,9 +58,6 @@ const COLORS = {
   sand: { hex: '#c2b280', rx: /(піщан|sand)/i },
   stone: { hex: '#928e85', rx: /(камін|stone)/i },
   earth: { hex: '#8b4513', rx: /(земл|earth)/i },
-  
-  light: { hex: '#f8fafc', rx: /(світл|light)(?!\s*(?:червон|рожев|помаранчев|жовт|зелен|син|фіолет|коричнев|сір))/i },
-  dark: { hex: '#000000', rx: /(темн|dark)(?!\s*(?:червон|рожев|помаранчев|жовт|зелен|син|фіолет|коричнев|сір))/i },
 };
 
 function findColor(word) {
@@ -134,14 +131,19 @@ function extractExplicitColors(text = '') {
   let explicitBg = false;
   let explicitText = false;
   
-  console.log('🎨 Parsing colors from:', t);
+  console.log(' Parsing colors from:', t);
   
   // Шукаємо фон
   const bgMatch = t.match(/(?:фон|background)\s*([а-яіїєґa-z\s-]+)|([а-яіїєґa-z\s-]+)\s*(?:фон|background)/i);
   if (bgMatch) {
-    const colorWord = (bgMatch[1] || bgMatch[2] || '').trim();
+    const colorWord = (bgMatch[1] || bgMatch[2] || '').split(/,|та|і|and/)[0].trim();
     console.log('🔍 Found bg word:', colorWord);
-    const c = findColor(colorWord);
+    const tokens = tokenizeWithIndices(colorWord);
+    let c = null;
+    for (const t of tokens) {
+      c = findColor(t.word);
+      if (c) break;
+    }
     if (c) {
       bg = c;
       explicitBg = true;
@@ -152,9 +154,14 @@ function extractExplicitColors(text = '') {
   // Шукаємо текст
   const textMatch = t.match(/(?:текст|text)\s*([а-яіїєґa-z\s-]+)|([а-яіїєґa-z\s-]+)\s*(?:текст|text)/i);
   if (textMatch) {
-    const colorWord = (textMatch[1] || textMatch[2] || '').trim();
+    const colorWord = (textMatch[1] || textMatch[2] || '').split(/,|та|і|and/)[0].trim();
     console.log('🔍 Found text word:', colorWord);
-    const c = findColor(colorWord);
+    const tokens = tokenizeWithIndices(colorWord);
+    let c = null;
+    for (const t of tokens) {
+      c = findColor(t.word);
+      if (c) break;
+    }
     if (c) {
       textColor = c;
       explicitText = true;
@@ -162,7 +169,7 @@ function extractExplicitColors(text = '') {
     }
   }
   
-  console.log('🎨 Final result:', { bg, text: textColor, explicitBg, explicitText });
+  console.log(' Final result:', { bg, text: textColor, explicitBg, explicitText });
   return { bg, text: textColor, explicitBg, explicitText };
 } 
 

@@ -31,6 +31,22 @@ function hasColorIntent(text) {
   return /(фон|background|текст|text)/i.test(text);
 }
 
+function buildPalette(userColors) {
+  const bg = userColors.bg ?? '#ffffff';
+  let text;
+  if (userColors.explicitText) {
+    text = userColors.text; // ❗ поважаємо користувача
+  } else if (userColors.text) {
+    text = userColors.text; // знайдено, але не явно
+  } else {
+    text = contrast(bg); // авто
+  }
+  
+  const accent = bg;
+  const buttonText = getBetterContrast(accent);
+  return { bg, text, accent, buttonText };
+}
+
 function scoreAndSelectTemplate(templates, categories, userText) {
   const userWords = userText.toLowerCase()
     .split(/[\s,]+/)
@@ -202,41 +218,17 @@ router.post('/', async (req, res) => {
       if (!colorIntent) {
         return res.json({ success: true, data: { html, css: template.css_content } });
       }
-      const bg = userColors.bg ?? '#ffffff';
-      let text;
-      if (userColors.explicitText) {
-        text = userColors.text; // ❗ поважаємо користувача
-      } else if (userColors.text) {
-        text = userColors.text; // знайдено, але не явно
-      } else {
-        text = contrast(bg); // авто
-      }
       
-      const accent = bg;
-      const buttonText = getBetterContrast(accent);
-      const palette = { bg, text, accent, buttonText };
-
+      const palette = buildPalette(userColors);
       const css = applyTheme(template.css_content, palette, {});
       return res.json({ success: true, data: { html, css } }); 
     }
 
     let palette;
     if (!colorIntent) {
-      palette = { bg: '#ffffff', text: '#020617', accent: '#020617', buttonText: '#020617' };
+      palette = { bg: '#ffffff', text: '#000000', accent: '#000000', buttonText: '#000000' };
     } else {
-      const bg = userColors.bg ?? '#ffffff';
-      let text;
-      if (userColors.explicitText) {
-        text = userColors.text; // ❗ поважаємо користувача
-      } else if (userColors.text) {
-        text = userColors.text; // знайдено, але не явно
-      } else {
-        text = contrast(bg); // авто
-      }
-      
-      const accent = bg;
-      const buttonText = getBetterContrast(accent);
-      palette = { bg, text, accent, buttonText };
+      palette = buildPalette(userColors);
     }
 
     const presetStyles = PRESETS[preset] || PRESETS.corporate;
