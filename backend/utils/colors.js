@@ -67,23 +67,29 @@ function findColor(word) {
   if (!word) return null;
   
   const wordLower = word.toLowerCase();
+  console.log('🔍 Testing color word:', wordLower);
   
+  // Перевіряємо складені кольори спочатку
   for (const [colorName, colorData] of Object.entries(COLORS)) {
     if (colorName.includes('dark') || colorName.includes('light') || 
         colorName === 'cherry' || colorName === 'turquoise' || 
         colorName === 'silver' || colorName === 'gold') {
       if (colorData.rx.test(wordLower)) {
+        console.log('✅ Compound color match:', colorName, '→', colorData.hex);
         return colorData.hex;
       }
     }
   }
   
+  // Потім основні кольори
   for (const [colorName, colorData] of Object.entries(COLORS)) {
     if (colorData.rx.test(wordLower)) {
+      console.log('✅ Basic color match:', colorName, '→', colorData.hex);
       return colorData.hex;
     }
   }
   
+  console.log('❌ No color match for:', wordLower);
   return null;
 }
 
@@ -164,17 +170,17 @@ function extractExplicitColors(text = '') {
       const pMatchDirect = part.match(/(?:фон|background)\s*([а-яіїєґa-z]+(?:[\s-][а-яіїєґa-z]+)*)|([а-яіїєґa-z]+(?:[\s-][а-яіїєґa-z]+)*)\s*(?:фон|background)/i);
       if (pMatchDirect) {
         const colorWord = (pMatchDirect[1] || pMatchDirect[2] || '').trim();
+        console.log('🔍 Found bg color word:', colorWord);
         const c = findColor(colorWord);
-        if (c) { bg = c; explicitBg = true; }
-      }
-      // if direct capture didn't find a full color, scan tokens inside the same part to find a color (respect explicit 'фон' context)
-      if (!bg) {
-        const tokensInPart = tokenizeWithIndices(part);
-        for (const tk of tokensInPart) {
-          const c = findColor(tk.word);
-          if (c) { bg = c; explicitBg = true; break; }
+        if (c) { 
+          bg = c; 
+          explicitBg = true;
+          console.log('✅ Bg color found:', c);
+        } else {
+          console.log('❌ Bg color not recognized:', colorWord);
         }
       }
+      // ❌ ВИДАЛЕНО небезпечний fallback блок
     }
 
     if (textMatch) {
@@ -185,8 +191,15 @@ function extractExplicitColors(text = '') {
       const pMatchDirect = part.match(/(?:текст|text)\s*([а-яіїєґa-z]+(?:[\s-][а-яіїєґa-z]+)*)|([а-яіїєґa-z]+(?:[\s-][а-яіїєґa-z]+)*)\s*(?:текст|text)/i);
       if (pMatchDirect) {
         const colorWord = (pMatchDirect[1] || pMatchDirect[2] || '').trim();
+        console.log('🔍 Found text color word:', colorWord);
         const c = findColor(colorWord);
-        if (c) { textColor = c; explicitText = true; }
+        if (c) { 
+          textColor = c; 
+          explicitText = true;
+          console.log('✅ Text color found:', c);
+        } else {
+          console.log('❌ Text color not recognized:', colorWord);
+        }
       }
       const lightDark = part.match(/\b(світл|темн|light|dark)\b/i);
       if (!textColor && lightDark) {
@@ -194,14 +207,7 @@ function extractExplicitColors(text = '') {
         textColor = /світл|light/.test(w) ? '#020617' : '#ffffff';
         explicitText = true;
       }
-      // if direct capture didn't find a full color, scan tokens inside the same part to find a color (respect explicit 'текст' context)
-      if (!textColor) {
-        const tokensInPart = tokenizeWithIndices(part);
-        for (const tk of tokensInPart) {
-          const c = findColor(tk.word);
-          if (c) { textColor = c; explicitText = true; break; }
-        }
-      }
+      // ❌ ВИДАЛЕНО небезпечний fallback блок для тексту
     }
   }
 

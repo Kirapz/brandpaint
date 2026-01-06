@@ -28,7 +28,7 @@ async function cachedSearchTemplates(pool, text) {
 }
 
 function hasColorIntent(text) {
-  return /(фон|background|текст|text|color|колір|червоний|синій|зелений|жовтий|red|blue|green|yellow)/i.test(text);
+  return /(фон|background|текст|text)/i.test(text);
 }
 
 function scoreAndSelectTemplate(templates, categories, userText) {
@@ -192,6 +192,7 @@ router.post('/', async (req, res) => {
     const userColors = extractExplicitColors(userText);
     
     console.log('🎨 Extracted colors:', userColors);
+    console.log('🎨 User text input:', userText);
     
     if (userColors.bg && userColors.text && userColors.bg === userColors.text && !userColors.explicitText) {
       userColors.text = getBetterContrast(userColors.bg);
@@ -202,13 +203,13 @@ router.post('/', async (req, res) => {
         return res.json({ success: true, data: { html, css: template.css_content } });
       }
       const bg = userColors.bg ?? '#ffffff';
-      let text = userColors.text;
-      if (!text) {
-        text = getBetterContrast(bg);
-      }
-      
-      if (text === bg) {
-        text = contrast(bg);
+      let text;
+      if (userColors.explicitText) {
+        text = userColors.text; // ❗ поважаємо користувача
+      } else if (userColors.text) {
+        text = userColors.text; // знайдено, але не явно
+      } else {
+        text = contrast(bg); // авто
       }
       
       const accent = bg;
@@ -224,13 +225,13 @@ router.post('/', async (req, res) => {
       palette = { bg: '#ffffff', text: '#020617', accent: '#020617', buttonText: '#020617' };
     } else {
       const bg = userColors.bg ?? '#ffffff';
-      let text = userColors.text;
-      if (!text) {
-        text = getBetterContrast(bg);
-      }
-      
-      if (text === bg) {
-        text = contrast(bg);
+      let text;
+      if (userColors.explicitText) {
+        text = userColors.text; // ❗ поважаємо користувача
+      } else if (userColors.text) {
+        text = userColors.text; // знайдено, але не явно
+      } else {
+        text = contrast(bg); // авто
       }
       
       const accent = bg;
