@@ -53,6 +53,7 @@ export default function EditorPage() {
   const { user } = useAuth();
   const editorRef = useRef(null);
   const iframeRef = useRef(null);
+  const isHydratingRef = useRef(true); // Флаг для першого завантаження
 
   const [historyId, setHistoryId] = useState(
     location.state?.historyId || localStorage.getItem(HISTORY_ID_KEY)
@@ -78,7 +79,7 @@ export default function EditorPage() {
 
   useEffect(() => {
     if (location.state?.template) {
-      // Новий шаблон з генератора
+      // Новий шаблон з генератора - ЄДИНЕ місце де оновлюємо ORIGINAL
       const { html = '', css = '' } = location.state.template;
       console.log('Saving new template as original:', { html: html.substring(0, 50), css: css.substring(0, 50) });
       localStorage.setItem(ORIGINAL_KEY, JSON.stringify({ html, css }));
@@ -92,37 +93,13 @@ export default function EditorPage() {
         localStorage.setItem(HISTORY_ID_KEY, location.state.historyId);
       }
       navigate(location.pathname, { replace: true, state: {} });
-    } else {
-      // Перезавантаження сторінки - перевіряємо чи це новий шаблон
-      const isNewTemplate = localStorage.getItem(NEW_TEMPLATE_FLAG) === 'true';
-      if (isNewTemplate) {
-        // Якщо це перший раз після отримання нового шаблону - не перезаписуємо original
-        console.log('Page reload after new template - keeping original intact');
-        localStorage.removeItem(NEW_TEMPLATE_FLAG); // Прибираємо флаг
-      } else {
-        // Якщо це звичайне перезавантаження і є збережені дані - оновлюємо original
-        const saved = safeParse(localStorage.getItem(STORAGE_KEY));
-        const original = safeParse(localStorage.getItem(ORIGINAL_KEY));
-        
-        if (saved && original && (saved.html !== original.html || saved.css !== original.css)) {
-          console.log('Regular reload with changes - updating original to current state');
-          localStorage.setItem(ORIGINAL_KEY, JSON.stringify({ 
-            html: saved.html || '', 
-            css: saved.css || '' 
-          }));
-        }
-      }
     }
+    
+    // Після першого рендеру прибираємо флаг hydration
+    setTimeout(() => {
+      isHydratingRef.current = false;
+    }, 100);
   }, [location.state, navigate, location.pathname]);
-
-  useEffect(() => {
-    // Cleanup при виході зі сторінки - оновлюємо original до поточного стану
-    return () => {
-      const currentState = { html: htmlCode, css: cssCode };
-      localStorage.setItem(ORIGINAL_KEY, JSON.stringify(currentState));
-      console.log('Page unload - updating original to current state');
-    };
-  }, [htmlCode, cssCode]);
 
   const getOriginal = useCallback(() => {
     return safeParse(localStorage.getItem(ORIGINAL_KEY)) || { html: '', css: '' };
@@ -134,6 +111,9 @@ export default function EditorPage() {
   }, [htmlCode, cssCode, getOriginal]);
 
   useEffect(() => {
+    // Не зберігаємо під час першого завантаження (hydration)
+    if (isHydratingRef.current) return;
+    
     const t = setTimeout(() => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ html: htmlCode, css: cssCode, activeTab }));
     }, 700);
@@ -143,15 +123,17 @@ export default function EditorPage() {
   useEffect(() => {
     if (!user || !historyId || !isDirty) return;
     
-    // Не зберігаємо в історію одразу після перезавантаження
+    // Не зберігаємо під час першого завантаження (hydration)
+    if (isHydratingRef.current) return;
+    
+    // Не зберігаємо в історію одразу після нового шаблону
     const isNewTemplate = localStorage.getItem(NEW_TEMPLATE_FLAG) === 'true';
     if (isNewTemplate) return;
     
     const t = setTimeout(async () => {
       const payload = { template: { html: htmlCode, css: cssCode } };
       await updateHistoryForUser(user.uid, historyId, payload);
-      // НЕ оновлюємо original тут - тільки при отриманні нового шаблону
-      console.log('Saved changes to history (not updating original)');
+      console.log('Saved changes to history');
     }, 1500);
     return () => clearTimeout(t);
   }, [htmlCode, cssCode, isDirty, user, historyId]);
@@ -160,22 +142,13 @@ export default function EditorPage() {
     const original = getOriginal();
     console.log('Reset to original:', original);
     
-    if (!original.html && !original.css) {
+    if (!original) {
       console.warn('No original template found');
-      // Якщо немає original, спробуємо взяти з поточного стану як fallback
-      const saved = safeParse(localStorage.getItem(STORAGE_KEY));
-      if (saved) {
-        setHtmlCode(saved.html || '');
-        setCssCode(saved.css || '');
-      } else {
-        setHtmlCode('');
-        setCssCode('');
-      }
-    } else {
-      setHtmlCode(original.html || '');
-      setCssCode(original.css || '');
+      return;
     }
     
+    setHtmlCode(original.html || '');
+    setCssCode(original.css || '');
     setActiveTab('html');
     
     // Оновлюємо localStorage до original стану
