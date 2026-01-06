@@ -79,6 +79,11 @@ function scoreAndSelectTemplate(templates, categories, userText) {
       score += 3;
     }
     
+    if ((userText.includes('фото') || userText.includes('photography')) && 
+        (templateName.includes('photographer') || templateKeywords.includes('photography'))) {
+      score += 4; // Високий бонус для фото
+    }
+    
     return { ...template, finalScore: score };
   });
   

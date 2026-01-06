@@ -78,6 +78,7 @@ export default function EditorPage() {
   useEffect(() => {
     if (location.state?.template) {
       const { html = '', css = '' } = location.state.template;
+      console.log('Saving new template as original:', { html: html.substring(0, 50), css: css.substring(0, 50) });
       localStorage.setItem(ORIGINAL_KEY, JSON.stringify({ html, css }));
       setHtmlCode(html);
       setCssCode(css);
@@ -119,10 +120,23 @@ export default function EditorPage() {
 
   const handleReset = () => {
     const original = getOriginal();
-    setHtmlCode(original.html);
-    setCssCode(original.css);
+    console.log('Reset to original:', original);
+    
+    if (!original.html && !original.css) {
+      console.warn('No original template found, using empty');
+      setHtmlCode('');
+      setCssCode('');
+    } else {
+      setHtmlCode(original.html || '');
+      setCssCode(original.css || '');
+    }
+    
     setActiveTab('html');
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ html: original.html, css: original.css, activeTab: 'html' }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ 
+      html: original.html || '', 
+      css: original.css || '', 
+      activeTab: 'html' 
+    }));
   };
 
   const srcDoc = useMemo(() => buildDoc(htmlCode, cssCode), [htmlCode, cssCode]);
