@@ -130,6 +130,9 @@
   background: #fff;
   transition: all 0.3s ease;
   border: none;
+  visibility: visible;
+  opacity: 1;
+  transform: translateZ(0); /* Форсуємо GPU acceleration */
 }
 
 .preview-iframe.desktop {

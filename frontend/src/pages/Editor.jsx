@@ -52,7 +52,6 @@ export default function EditorPage() {
   const { user } = useAuth();
   const editorRef = useRef(null);
   const iframeRef = useRef(null);
-  const [iframeReady, setIframeReady] = useState(false);
 
   const [historyId, setHistoryId] = useState(
     location.state?.historyId || localStorage.getItem(HISTORY_ID_KEY)
@@ -128,23 +127,23 @@ export default function EditorPage() {
 
   const srcDoc = useMemo(() => buildDoc(htmlCode, cssCode), [htmlCode, cssCode]);
 
-  // Форсуємо перерендер iframe при монтуванні компонента
+  // Форсуємо перерендер iframe при зміні контенту
   useEffect(() => {
-    // Невелика затримка щоб DOM встиг відрендеритись
-    const timer = setTimeout(() => {
-      setIframeReady(true);
-      // Форсуємо reflow iframe
-      if (iframeRef.current) {
-        iframeRef.current.style.opacity = '0.99';
-        requestAnimationFrame(() => {
-          if (iframeRef.current) {
-            iframeRef.current.style.opacity = '1';
-          }
-        });
-      }
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
+    if (iframeRef.current && srcDoc) {
+      // Метод 1: Перезавантажуємо iframe
+      const iframe = iframeRef.current;
+      iframe.style.display = 'none';
+      iframe.offsetHeight; // Trigger reflow
+      iframe.style.display = 'block';
+      
+      // Метод 2: Додаємо невидимий символ для форсування оновлення
+      setTimeout(() => {
+        if (iframe.contentDocument) {
+          iframe.contentDocument.body.style.transform = 'translateZ(0)';
+        }
+      }, 50);
+    }
+  }, [srcDoc]);
 
   const handleBack = () => navigate('/generator');
 
@@ -294,6 +293,13 @@ export default function EditorPage() {
             srcDoc={srcDoc}
             className={`preview-iframe ${previewMode} ${previewFullscreen ? 'fullscreen-mode' : ''}`}
             sandbox="allow-scripts"
+            onLoad={() => {
+              // Форсуємо видимість після завантаження
+              if (iframeRef.current) {
+                iframeRef.current.style.visibility = 'visible';
+                iframeRef.current.style.opacity = '1';
+              }
+            }}
           />
         </div>
       </div>

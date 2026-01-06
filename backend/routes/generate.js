@@ -104,11 +104,11 @@ async function hybridTemplateSearch(pool, categories, userText) {
     
     let embeddingResults = [];
     
-    // Перевіряємо чи embedding вимкнено через env
-    const disableEmbedding = process.env.DISABLE_EMBEDDING === 'true';
+    // Перевіряємо чи embedding вимкнено через env або це production
+    const disableEmbedding = process.env.DISABLE_EMBEDDING === 'true' || process.env.NODE_ENV === 'production';
     
     if (disableEmbedding) {
-      console.log('⚠️ Embedding disabled via env, keyword-only search');
+      console.log('⚠️ Embedding disabled, keyword-only search');
       const result = await pool.query(
         'SELECT id, name, category, keywords, html_content, css_content FROM templates LIMIT 30'
       );
