@@ -102,31 +102,40 @@ async function hybridTemplateSearch(pool, categories, userText) {
   try {
     console.log('🔍 Search:', categories);
     
-    // Пропускаємо embedding для дуже коротких текстів
-    if (userText.length < 5) {
-      console.log('⚠️ Text too short, keyword-only');
-      const result = await pool.query(
-        'SELECT id, name, category, keywords, html_content, css_content FROM templates LIMIT 30'
-      );
-      return scoreAndSelectTemplate(result.rows, categories, userText);
-    }
-    
-    // Спочатку пробуємо embedding з timeout і кешем
     let embeddingResults = [];
-    try {
-      const embeddingPromise = cachedSearchTemplates(pool, userText);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Embedding timeout')), 10000)
-      );
-      
-      embeddingResults = await Promise.race([embeddingPromise, timeoutPromise]);
-      console.log(`✅ Embedding: ${embeddingResults.length}`);
-    } catch (embeddingError) {
-      console.warn('⚠️ Embedding failed, keyword search');
+    
+    // Вимикаємо embedding на production через OOM
+    if (process.env.NODE_ENV === 'production') {
+      console.log('⚠️ Production mode: keyword-only search');
       const result = await pool.query(
         'SELECT id, name, category, keywords, html_content, css_content FROM templates LIMIT 30'
       );
       embeddingResults = result.rows;
+    } else {
+      // Локально можна спробувати embedding
+      if (userText.length < 5) {
+        console.log('⚠️ Text too short, keyword-only');
+        const result = await pool.query(
+          'SELECT id, name, category, keywords, html_content, css_content FROM templates LIMIT 30'
+        );
+        return scoreAndSelectTemplate(result.rows, categories, userText);
+      }
+      
+      try {
+        const embeddingPromise = cachedSearchTemplates(pool, userText);
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Embedding timeout')), 10000)
+        );
+        
+        embeddingResults = await Promise.race([embeddingPromise, timeoutPromise]);
+        console.log(`✅ Embedding: ${embeddingResults.length}`);
+      } catch (embeddingError) {
+        console.warn('⚠️ Embedding failed, keyword search');
+        const result = await pool.query(
+          'SELECT id, name, category, keywords, html_content, css_content FROM templates LIMIT 30'
+        );
+        embeddingResults = result.rows;
+      }
     }
     
     if (embeddingResults.length === 0) {
