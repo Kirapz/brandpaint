@@ -104,9 +104,11 @@ async function hybridTemplateSearch(pool, categories, userText) {
     
     let embeddingResults = [];
     
-    // Вимикаємо embedding на production через OOM
-    if (process.env.NODE_ENV === 'production') {
-      console.log(' Production mode: keyword-only search');
+    // Перевіряємо чи embedding вимкнено через env
+    const disableEmbedding = process.env.DISABLE_EMBEDDING === 'true';
+    
+    if (disableEmbedding) {
+      console.log('⚠️ Embedding disabled via env, keyword-only search');
       const result = await pool.query(
         'SELECT id, name, category, keywords, html_content, css_content FROM templates LIMIT 30'
       );
@@ -124,13 +126,13 @@ async function hybridTemplateSearch(pool, categories, userText) {
       try {
         const embeddingPromise = cachedSearchTemplates(pool, userText);
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Embedding timeout')), 10000)
+          setTimeout(() => reject(new Error('Embedding timeout')), 15000)
         );
         
         embeddingResults = await Promise.race([embeddingPromise, timeoutPromise]);
-        console.log(` Embedding: ${embeddingResults.length}`);
+        console.log(`✅ Embedding: ${embeddingResults.length}`);
       } catch (embeddingError) {
-        console.warn(' Embedding failed, keyword search');
+        console.warn('⚠️ Embedding failed, keyword search:', embeddingError.message);
         const result = await pool.query(
           'SELECT id, name, category, keywords, html_content, css_content FROM templates LIMIT 30'
         );

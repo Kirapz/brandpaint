@@ -51,6 +51,8 @@ export default function EditorPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const editorRef = useRef(null);
+  const iframeRef = useRef(null);
+  const [iframeReady, setIframeReady] = useState(false);
 
   const [historyId, setHistoryId] = useState(
     location.state?.historyId || localStorage.getItem(HISTORY_ID_KEY)
@@ -125,6 +127,24 @@ export default function EditorPage() {
   };
 
   const srcDoc = useMemo(() => buildDoc(htmlCode, cssCode), [htmlCode, cssCode]);
+
+  // Форсуємо перерендер iframe при монтуванні компонента
+  useEffect(() => {
+    // Невелика затримка щоб DOM встиг відрендеритись
+    const timer = setTimeout(() => {
+      setIframeReady(true);
+      // Форсуємо reflow iframe
+      if (iframeRef.current) {
+        iframeRef.current.style.opacity = '0.99';
+        requestAnimationFrame(() => {
+          if (iframeRef.current) {
+            iframeRef.current.style.opacity = '1';
+          }
+        });
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleBack = () => navigate('/generator');
 
@@ -269,6 +289,7 @@ export default function EditorPage() {
 
         <div className="preview-wrap">
           <iframe
+            ref={iframeRef}
             title="preview"
             srcDoc={srcDoc}
             className={`preview-iframe ${previewMode} ${previewFullscreen ? 'fullscreen-mode' : ''}`}
