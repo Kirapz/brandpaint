@@ -3,9 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { updateHistoryForUser } from '../firebase';
 
-// Lazy load Monaco для швидшого першого рендеру
 const Monaco = React.lazy(() => import('@monaco-editor/react').then(module => {
-  // Конфігуруємо loader після імпорту
   module.loader.config({
     paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs' }
   });
@@ -53,7 +51,7 @@ export default function EditorPage() {
   const { user } = useAuth();
   const editorRef = useRef(null);
   const iframeRef = useRef(null);
-  const isHydratingRef = useRef(true); // Флаг для першого завантаження
+  const isHydratingRef = useRef(true); 
 
   const [historyId, setHistoryId] = useState(
     location.state?.historyId || localStorage.getItem(HISTORY_ID_KEY)
@@ -66,7 +64,7 @@ export default function EditorPage() {
   const [previewMode, setPreviewMode] = useState('desktop');
   const [previewFullscreen, setPreviewFullscreen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [mobileView, setMobileView] = useState('code'); // 'code' або 'preview'
+  const [mobileView, setMobileView] = useState('code'); 
 
   useEffect(() => {
     const handleResize = () => {
@@ -79,11 +77,10 @@ export default function EditorPage() {
 
   useEffect(() => {
     if (location.state?.template) {
-      // Новий шаблон з генератора - ЄДИНЕ місце де оновлюємо ORIGINAL
       const { html = '', css = '' } = location.state.template;
       console.log('Saving new template as original:', { html: html.substring(0, 50), css: css.substring(0, 50) });
       localStorage.setItem(ORIGINAL_KEY, JSON.stringify({ html, css }));
-      localStorage.setItem(NEW_TEMPLATE_FLAG, 'true'); // Позначаємо що це новий шаблон
+      localStorage.setItem(NEW_TEMPLATE_FLAG, 'true'); 
       setHtmlCode(html);
       setCssCode(css);
       setActiveTab('html');
@@ -95,7 +92,6 @@ export default function EditorPage() {
       navigate(location.pathname, { replace: true, state: {} });
     }
     
-    // Після першого рендеру прибираємо флаг hydration
     setTimeout(() => {
       isHydratingRef.current = false;
     }, 100);
@@ -111,7 +107,6 @@ export default function EditorPage() {
   }, [htmlCode, cssCode, getOriginal]);
 
   useEffect(() => {
-    // Не зберігаємо під час першого завантаження (hydration)
     if (isHydratingRef.current) return;
     
     const t = setTimeout(() => {
@@ -123,10 +118,8 @@ export default function EditorPage() {
   useEffect(() => {
     if (!user || !historyId || !isDirty) return;
     
-    // Не зберігаємо під час першого завантаження (hydration)
     if (isHydratingRef.current) return;
     
-    // Не зберігаємо в історію одразу після нового шаблону
     const isNewTemplate = localStorage.getItem(NEW_TEMPLATE_FLAG) === 'true';
     if (isNewTemplate) return;
     
@@ -151,7 +144,6 @@ export default function EditorPage() {
     setCssCode(original.css || '');
     setActiveTab('html');
     
-    // Оновлюємо localStorage до original стану
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ 
       html: original.html || '', 
       css: original.css || '', 
@@ -163,21 +155,17 @@ export default function EditorPage() {
 
   const srcDoc = useMemo(() => buildDoc(htmlCode, cssCode), [htmlCode, cssCode]);
 
-  // Key для iframe щоб форсувати повний перерендер при зміні контенту
   const iframeKey = useMemo(() => {
     return `iframe-${htmlCode.length}-${cssCode.length}`;
   }, [htmlCode, cssCode]);
 
-  // Форсуємо перерендер iframe при зміні контенту
   useEffect(() => {
     if (iframeRef.current && srcDoc) {
-      // Метод 1: Перезавантажуємо iframe
       const iframe = iframeRef.current;
       iframe.style.display = 'none';
-      iframe.offsetHeight; // Trigger reflow
+      iframe.offsetHeight; 
       iframe.style.display = 'block';
       
-      // Метод 2: Додаємо невидимий символ для форсування оновлення
       setTimeout(() => {
         if (iframe.contentDocument) {
           iframe.contentDocument.body.style.transform = 'translateZ(0)';
@@ -199,7 +187,6 @@ export default function EditorPage() {
     URL.revokeObjectURL(a.href);
   };
 
-  // Мобільна версія
   if (isMobile) {
     return (
       <div className="editor-page mobile">
@@ -275,7 +262,6 @@ export default function EditorPage() {
     );
   }
 
-  // Десктопна версія
   return (
     <div className="editor-page">
       <div className="editor-topbar">
@@ -336,7 +322,6 @@ export default function EditorPage() {
             className={`preview-iframe ${previewMode} ${previewFullscreen ? 'fullscreen-mode' : ''}`}
             sandbox="allow-scripts"
             onLoad={() => {
-              // Форсуємо видимість після завантаження
               if (iframeRef.current) {
                 iframeRef.current.style.visibility = 'visible';
                 iframeRef.current.style.opacity = '1';

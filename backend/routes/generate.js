@@ -8,7 +8,6 @@ const PRESETS = require('../utils/presets');
 const { applyTheme } = require('../utils/theme');
 const { searchTemplates } = require('../services/templates');
 
-// Embedding cache для пришвидшення
 const embeddingCache = new Map();
 
 async function cachedSearchTemplates(pool, text) {
@@ -20,7 +19,6 @@ async function cachedSearchTemplates(pool, text) {
   const result = await searchTemplates(pool, text, 10);
   embeddingCache.set(text, result);
   
-  // Обмежуємо розмір кешу
   if (embeddingCache.size > 100) {
     const firstKey = embeddingCache.keys().next().value;
     embeddingCache.delete(firstKey);
@@ -33,14 +31,12 @@ function hasColorIntent(text) {
   return /(фон|background|текст|text|color|колір|червоний|синій|зелений|жовтий|red|blue|green|yellow)/i.test(text);
 }
 
-// Окрема функція для scoring
 function scoreAndSelectTemplate(templates, categories, userText) {
   const userWords = userText.toLowerCase()
     .split(/[\s,]+/)
     .map(w => w.trim())
     .filter(w => w.length > 2);
   
-  // Рахуємо частоту слів
   const wordFreq = {};
   userWords.forEach(w => wordFreq[w] = (wordFreq[w] || 0) + 1);
   
@@ -50,12 +46,10 @@ function scoreAndSelectTemplate(templates, categories, userText) {
     const templateKeywords = (template.keywords || '').toLowerCase();
     const templateCategory = template.category || '';
     
-    // +3 бали за категорію
     if (categories.includes(templateCategory)) {
       score += 3;
     }
     
-    // Перевіряємо слова з врахуванням частоти
     for (const word of Object.keys(wordFreq)) {
       const freq = wordFreq[word];
       
@@ -68,7 +62,6 @@ function scoreAndSelectTemplate(templates, categories, userText) {
       }
     }
     
-    // Бонуси для специфічних слів
     if ((userText.includes('кава') || userText.includes('coffee')) && 
         (templateName.includes('coffee') || templateKeywords.includes('coffee'))) {
       score += 3;
@@ -81,13 +74,12 @@ function scoreAndSelectTemplate(templates, categories, userText) {
     
     if ((userText.includes('фото') || userText.includes('photography')) && 
         (templateName.includes('photographer') || templateKeywords.includes('photography'))) {
-      score += 4; // Високий бонус для фото
+      score += 4; 
     }
     
     return { ...template, finalScore: score };
   });
   
-  // Стабільне сортування
   scoredTemplates.sort((a, b) => {
     if (b.finalScore !== a.finalScore) {
       return b.finalScore - a.finalScore;
@@ -102,24 +94,21 @@ function scoreAndSelectTemplate(templates, categories, userText) {
   return scoredTemplates[0];
 }
 
-// Гібридний пошук: embedding + scoring система
 async function hybridTemplateSearch(pool, categories, userText) {
   try {
-    console.log('🔍 Search:', categories);
+    console.log(' Search:', categories);
     
     let embeddingResults = [];
     
-    // Перевіряємо чи embedding вимкнено через env або це production
     const disableEmbedding = process.env.DISABLE_EMBEDDING === 'true' || process.env.NODE_ENV === 'production';
     
     if (disableEmbedding) {
-      console.log('⚠️ Embedding disabled, keyword-only search');
+      console.log(' Embedding disabled, keyword-only search');
       const result = await pool.query(
         'SELECT id, name, category, keywords, html_content, css_content FROM templates LIMIT 30'
       );
       embeddingResults = result.rows;
     } else {
-      // Локально можна спробувати embedding
       if (userText.length < 5) {
         console.log(' Text too short, keyword-only');
         const result = await pool.query(
@@ -135,9 +124,9 @@ async function hybridTemplateSearch(pool, categories, userText) {
         );
         
         embeddingResults = await Promise.race([embeddingPromise, timeoutPromise]);
-        console.log(`✅ Embedding: ${embeddingResults.length}`);
+        console.log(` Embedding: ${embeddingResults.length}`);
       } catch (embeddingError) {
-        console.warn('⚠️ Embedding failed, keyword search:', embeddingError.message);
+        console.warn('Embedding failed, keyword search:', embeddingError.message);
         const result = await pool.query(
           'SELECT id, name, category, keywords, html_content, css_content FROM templates LIMIT 30'
         );
@@ -161,7 +150,6 @@ router.post('/', async (req, res) => {
   try {
     const { description = '', keywords = [], brandName = '', preset = 'default', templateId } = req.body;
     
-    // 🔥 ШВИДКИЙ ШЛЯХ: якщо є templateId - повертаємо одразу
     if (templateId) {
       console.log('⚡ Fast path: ID', templateId);
       const result = await pool.query(
@@ -187,7 +175,6 @@ router.post('/', async (req, res) => {
     let categories = extractBusinessTypes(userText);
     console.log('Categories:', categories);
 
-    // Використовуємо гібридний пошук
     let template = await hybridTemplateSearch(pool, categories, userText);
 
     if (!template) {
@@ -201,16 +188,13 @@ router.post('/', async (req, res) => {
 
     const html = template.html_content.replace(/{{BRAND_NAME}}/g, finalBrandName).replace(/{{DESCRIPTION}}/g, description || '');
 
-    // Визначення кольорів
     const colorIntent = hasColorIntent(userText);
     const userColors = extractExplicitColors(userText);
     
-    // Виправлення однакових кольорів фону і тексту
     if (userColors.bg && userColors.text && userColors.bg === userColors.text) {
       userColors.text = getBetterContrast(userColors.bg);
     }
 
-    // default preset: якщо в запиті немає color intent — повний original css
     if (!preset || preset === 'default') {
       if (!colorIntent) {
         return res.json({ success: true, data: { html, css: template.css_content } });
@@ -230,7 +214,6 @@ router.post('/', async (req, res) => {
       return res.json({ success: true, data: { html, css } });
     }
 
-    // non-default presets
     let palette;
     if (!colorIntent) {
       palette = { bg: '#ffffff', text: '#020617', accent: '#020617', buttonText: '#020617' };

@@ -15,7 +15,6 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Reset / box-sizing */
 *,
 *::before,
 *::after {
@@ -34,7 +33,6 @@ body {
   min-width: 320px;
 }
 
-/* Links */
 a {
   font-weight: 500;
   color: #989cd1;
@@ -43,10 +41,8 @@ a {
 a:hover {
   color: #8488b6;
 }
-
-/* Headings & text */
 h1 {
-  font-size: 3.2em; /* вибрано одне значення замість дублювання */
+  font-size: 3.2em; 
   line-height: 1.1;
   margin-bottom: 0.2em;
 
@@ -60,7 +56,6 @@ p {
   margin-bottom: 1.5em;
 }
 
-/* Buttons */
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -80,8 +75,6 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-/* Utility: generic page container to avoid accidental extra scrolls
-   Use this on page wrappers: <div class="page">...</div> */
 .page {
   padding-top: var(--navbar-height);
   min-height: calc(100dvh - var(--navbar-height));

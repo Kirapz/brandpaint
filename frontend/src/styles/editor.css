@@ -8,7 +8,6 @@
   overflow: hidden;
 }
 
-/* Прибираємо зайві елементи Monaco */
 .minimap, 
 .decorationsOverviewRuler {
   display: none !important;
@@ -72,7 +71,6 @@
   min-width: 320px;
 }
 
-/* Кнопки перемикання табів */
 .editor-tab {
   padding: 5px 15px;
   background: #3d3d3d;
@@ -88,7 +86,6 @@
   background: #007acc;
 }
 
-/* Кнопки режимів (Desktop/Mobile) */
 .mode-btn {
   padding: 5px 10px;
   background: #333;
@@ -103,7 +100,6 @@
   background: #505050;
 }
 
-/* Кнопки експорту та скидання */
 .btn-export {
   padding: 5px 12px;
   background: #28a745;
@@ -124,7 +120,6 @@
   font-size: 12px;
 }
 
-/* Стилі Iframe */
 .preview-iframe {
   display: block;
   background: #fff;
@@ -132,7 +127,7 @@
   border: none;
   visibility: visible;
   opacity: 1;
-  transform: translateZ(0); /* Форсуємо GPU acceleration */
+  transform: translateZ(0); 
 }
 
 .preview-iframe.desktop {
@@ -157,7 +152,6 @@
   border-radius: 0 !important;
 }
 
-/* Мобільні стилі */
 @media (max-width: 768px) {
   .editor-page.mobile {
     height: 100vh;
@@ -230,7 +224,6 @@
     background: #fff;
   }
 
-  /* Адаптуємо кнопки для мобільного */
   .editor-tab {
     padding: 6px 12px;
     font-size: 12px;
@@ -250,13 +243,12 @@
     background: #dc3545;
   }
 
-  /* Приховуємо десктопні елементи на мобільному */
+
   .editor-workspace {
     display: none !important;
   }
 }
 
-/* Десктопні стилі залишаються без змін */
 @media (min-width: 769px) {
   .editor-page.mobile {
     display: none;

@@ -3,19 +3,15 @@ const router = express.Router();
 const pool = require('../db');
 const { verifyToken } = require('../middleware/auth');
 
-// Отримати профіль користувача
 router.get('/profile', verifyToken, async (req, res) => {
   try {
     const { uid, email, name } = req.user;
-    
-    // Перевіряємо чи користувач існує в БД, якщо ні - створюємо
     let result = await pool.query(
       'SELECT * FROM users WHERE firebase_uid = $1',
       [uid]
     );
     
     if (result.rows.length === 0) {
-      // Створюємо нового користувача
       result = await pool.query(
         'INSERT INTO users (firebase_uid, email, name, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *',
         [uid, email, name]
@@ -42,7 +38,6 @@ router.get('/profile', verifyToken, async (req, res) => {
   }
 });
 
-// Оновити профіль користувача
 router.put('/profile', verifyToken, async (req, res) => {
   try {
     const { uid } = req.user;

@@ -27,7 +27,6 @@ export default function Profile() {
         if (!mounted) return;
         setCount(items.length);
 
-        // 2) мета-профіль з Firestore
         const p = await getUserProfile(user.uid);
         if (!mounted) return;
         const profileData = {

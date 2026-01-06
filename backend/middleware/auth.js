@@ -1,6 +1,5 @@
 const admin = require('firebase-admin');
 
-// Ініціалізація Firebase Admin SDK тільки якщо всі ключі є
 let firebaseInitialized = false;
 
 if (process.env.FIREBASE_PROJECT_ID && 
@@ -11,7 +10,6 @@ if (process.env.FIREBASE_PROJECT_ID &&
   
   try {
     if (!admin.apps.length) {
-      // Додаткове логування для діагностики
       console.log('Initializing Firebase Admin SDK...');
       console.log('Project ID:', process.env.FIREBASE_PROJECT_ID);
       console.log('Client Email:', process.env.FIREBASE_CLIENT_EMAIL);
@@ -35,25 +33,23 @@ if (process.env.FIREBASE_PROJECT_ID &&
       });
       
       firebaseInitialized = true;
-      console.log('✅ Firebase Admin SDK initialized successfully');
+      console.log(' Firebase Admin SDK initialized successfully');
     }
   } catch (error) {
-    console.error('❌ Firebase initialization failed:', error.message);
+    console.error(' Firebase initialization failed:', error.message);
     console.error('Full error:', error);
     console.log('Running without Firebase authentication');
   }
 } else {
   console.log('🔧 Firebase credentials not configured properly:');
-  console.log('- FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID ? '✅' : '❌');
-  console.log('- FIREBASE_PRIVATE_KEY:', process.env.FIREBASE_PRIVATE_KEY ? '✅' : '❌');
-  console.log('- FIREBASE_CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL ? '✅' : '❌');
+  console.log('- FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID ? '+' : '-');
+  console.log('- FIREBASE_PRIVATE_KEY:', process.env.FIREBASE_PRIVATE_KEY ? '+' : '-');
+  console.log('- FIREBASE_CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL ? '+' : '-');
   console.log('Running without Firebase authentication');
 }
 
-// Middleware для перевірки токену
 const verifyToken = async (req, res, next) => {
   if (!firebaseInitialized) {
-    // Для локального тестування без Firebase
     req.user = {
       uid: 'test-user-123',
       email: 'test@example.com',
@@ -91,10 +87,8 @@ const verifyToken = async (req, res, next) => {
   }
 };
 
-// Опціональна авторизація (не блокує запит якщо токену немає)
 const optionalAuth = async (req, res, next) => {
   if (!firebaseInitialized) {
-    // Для локального тестування
     req.user = {
       uid: 'test-user-123',
       email: 'test@example.com',
@@ -119,7 +113,6 @@ const optionalAuth = async (req, res, next) => {
     
     next();
   } catch (error) {
-    // Просто продовжуємо без користувача
     next();
   }
 };

@@ -3,10 +3,8 @@ const { getEmbedding } = require('./embedding');
 
 async function searchTemplates(pool, userText, limit = 5) {
   try {
-    // Отримуємо embedding для тексту користувача
     const embedding = await getEmbedding(userText);
     
-    // Шукаємо найближчі шаблони за embedding
     const query = `
       SELECT *, (embedding <-> $1::vector) as similarity
       FROM templates
@@ -22,7 +20,6 @@ async function searchTemplates(pool, userText, limit = 5) {
   }
 }
 
-// Залишаємо стару функцію для зворотної сумісності
 async function searchTemplatesByCategory(pool, category, embedding) {
   const q = `
     SELECT html_content, css_content

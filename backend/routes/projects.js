@@ -3,7 +3,6 @@ const router = express.Router();
 const pool = require('../db');
 const { verifyToken, optionalAuth } = require('../middleware/auth');
 
-// Отримати всі проекти користувача
 router.get('/', verifyToken, async (req, res) => {
   try {
     const { uid } = req.user;
@@ -30,13 +29,11 @@ router.get('/', verifyToken, async (req, res) => {
   }
 });
 
-// Створити новий проект
 router.post('/', verifyToken, async (req, res) => {
   try {
     const { uid } = req.user;
     const { name, description, html_content, css_content, brand_name, keywords } = req.body;
     
-    // Отримуємо ID користувача з БД
     const userResult = await pool.query(
       'SELECT id FROM users WHERE firebase_uid = $1',
       [uid]
@@ -71,7 +68,6 @@ router.post('/', verifyToken, async (req, res) => {
   }
 });
 
-// Отримати конкретний проект
 router.get('/:id', optionalAuth, async (req, res) => {
   try {
     const { id } = req.params;
@@ -83,7 +79,6 @@ router.get('/:id', optionalAuth, async (req, res) => {
       WHERE p.id = $1
     `;
     
-    // Якщо користувач авторизований, перевіряємо чи це його проект
     if (req.user) {
       query += ` AND (p.is_public = true OR u.firebase_uid = $2)`;
       const result = await pool.query(query, [id, req.user.uid]);
@@ -100,7 +95,6 @@ router.get('/:id', optionalAuth, async (req, res) => {
         data: result.rows[0]
       });
     } else {
-      // Неавторизований користувач може бачити тільки публічні проекти
       query += ` AND p.is_public = true`;
       const result = await pool.query(query, [id]);
       
@@ -125,7 +119,6 @@ router.get('/:id', optionalAuth, async (req, res) => {
   }
 });
 
-// Оновити проект
 router.put('/:id', verifyToken, async (req, res) => {
   try {
     const { uid } = req.user;
@@ -162,7 +155,6 @@ router.put('/:id', verifyToken, async (req, res) => {
   }
 });
 
-// Видалити проект
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
     const { uid } = req.user;

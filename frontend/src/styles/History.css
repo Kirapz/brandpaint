@@ -7,28 +7,18 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-
-  /* Враховуємо висоту navbar, щоб контент не ховався під ним
-     і щоб сумарна висота не перевищувала viewport. */
-  padding-top: calc(var(--navbar-height) + 24px); /* +24px — трохи простору під заголовок */
+  padding-top: calc(var(--navbar-height) + 24px); 
   padding-left: 20px;
   padding-right: 20px;
-
-  /* гарантуємо, що сторінка не "вистрибне" за межі екрана
-     — використовуємо d/vh з відніманням висоти navbar */
   min-height: calc(100dvh - var(--navbar-height) + 11.5px);
 }
 
-/* Заголовок трішки нижче від верху і з контрастним кольором */
 .history-title {
   margin: 0 0 24px 0;
   color: #aaa7a7;
   font-weight: 600;
-  /* Якщо хочеш додатково відсунути заголовок — змінюй margin-top */
-  /* margin-top: 8px; */
 }
 
-/* Фільтри */
 .history-filters {
   display: flex;
   gap: 12px;
@@ -37,7 +27,6 @@
   align-items: center;
 }
 
-/* Інпут/селект/чекбокс залишаю практично як у тебе */
 .filter-input {
   padding: 10px 14px;
   border-radius: 8px;
@@ -71,16 +60,13 @@
 }
 .filter-checkbox input:focus { outline: none; box-shadow: none; }
 
-/* Список карток — робимо відступ знизу, щоб остання карта не "підчіплювалась" */
 .history-list {
   display: grid;
   gap: 20px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  padding-bottom: 28px; /* безпека для останнього елемента */
+  padding-bottom: 28px; 
 }
 
-/* Карточка: прибираю max-width:90% (вона іноді шкодить у гріді)
-   та гарантуємо ширину 100% колонки */
 .history-card {
   background: #ffffff;
   border-radius: 12px;
@@ -98,7 +84,6 @@
   box-shadow: 0 6px 20px rgba(0,0,0,0.25);
 }
 
-/* Верх картки + заголовок */
 .card-top {
   display: flex;
   justify-content: space-between;
@@ -112,7 +97,6 @@
   color: #1a1a1a;
 }
 
-/* Опис */
 .desc-toggle-btn {
   background: none;
   border: none;
@@ -135,15 +119,12 @@
   border-left: 3px solid #dee2e6;
 }
 
-/* Дати */
 .card-dates {
   font-size: 12px;
   color: #777;
   margin-top: 8px;
 }
 .updated-label { color: #0056b3; font-weight: 500; }
-
-/* Кнопки дій */
 .card-actions { display: flex; gap: 10px; align-items: center; }
 
 .btn-icon {
@@ -189,7 +170,6 @@
   font-style: italic;
 }
 
-/* RESPONSIVE */
 @media (max-width: 900px) {
   .history-list {
     grid-template-columns: 1fr;

@@ -36,14 +36,12 @@ function Nav() {
   }, []);
 
   useEffect(() => {
-    // Блокуємо скрол коли меню відкрите
     if (isMobileMenuOpen) {
       document.body.classList.add('mobile-menu-open');
     } else {
       document.body.classList.remove('mobile-menu-open');
     }
 
-    // Очищуємо при розмонтуванні компонента
     return () => {
       document.body.classList.remove('mobile-menu-open');
     };

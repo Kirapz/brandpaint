@@ -14,7 +14,3 @@ build/
 # cache
 .cache/
 
-# IDE
-.vscode/
-backend/.vscode/
-frontend/.vscode/

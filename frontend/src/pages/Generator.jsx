@@ -35,7 +35,6 @@ const Generator = () => {
       console.log('Отримали результат:', result);
 
       if (result.success) {
-        // save to firebase history if user is logged in
         if (user && user.uid) {
           try {
             await saveHistoryForUser(user.uid, {
@@ -48,7 +47,6 @@ const Generator = () => {
             console.log('Збережено в історію');
           } catch (historyError) {
             console.error('Помилка збереження в історію:', historyError);
-            // Не блокуємо процес, якщо історія не збереглася
           }
         }
 

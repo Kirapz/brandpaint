@@ -5,17 +5,15 @@ let isLoading = false;
 let loadError = null;
 
 async function getEmbedding(text) {
-  // Якщо вже була помилка завантаження, не пробуємо знову
   if (loadError) {
     console.warn('Embedding disabled due to previous error:', loadError.message);
     throw loadError;
   }
 
-  // Якщо модель завантажується, чекаємо
   if (isLoading) {
     console.log('Waiting for model to load...');
     await new Promise(resolve => setTimeout(resolve, 1000));
-    return getEmbedding(text); // Retry
+    return getEmbedding(text); // Retry 
   }
 
   try {
@@ -27,14 +25,13 @@ async function getEmbedding(text) {
         'feature-extraction',
         'Xenova/paraphrase-multilingual-MiniLM-L12-v2',
         { 
-          // Оптимізація для low memory
           quantized: true,
           progress_callback: null
         }
       );
       
       isLoading = false;
-      console.log('✅ Embedding model loaded successfully');
+      console.log(' Embedding model loaded successfully');
     }
 
     const output = await extractor(text, {
@@ -46,7 +43,7 @@ async function getEmbedding(text) {
   } catch (error) {
     isLoading = false;
     loadError = error;
-    console.error('❌ Embedding error:', error.message);
+    console.error(' Embedding error:', error.message);
     throw error;
   }
 }

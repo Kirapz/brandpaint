@@ -18,18 +18,15 @@ function extractBusinessTypes(text = '') {
     legal: /(нотар|юрист|адвокат|правов|legal|law|notary|юридич)/
   };
 
-  // Збираємо всі категорії, що підходять
   for (const [type, rx] of Object.entries(MAP)) {
     if (rx.test(t)) {
       categories.push(type);
     }
   }
 
-  // Якщо нічого не знайшли, повертаємо всі категорії для широкого пошуку
   return categories.length > 0 ? categories : Object.keys(MAP);
 }
 
-// Залишаємо стару функцію для зворотної сумісності
 function extractBusinessType(text = '') {
   const categories = extractBusinessTypes(text);
   return categories.length > 0 ? categories[0] : 'default';

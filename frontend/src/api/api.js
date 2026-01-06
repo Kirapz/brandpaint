@@ -3,7 +3,6 @@ import { API_BASE_URL } from '../config/api.js';
 
 const API_BASE = API_BASE_URL;
 
-// Функція для отримання токену з Firebase
 const getAuthToken = async () => {
   const { getAuth } = await import('firebase/auth');
   const auth = getAuth();
@@ -13,7 +12,6 @@ const getAuthToken = async () => {
   return null;
 };
 
-// Базова функція для API запитів
 const apiRequest = async (endpoint, options = {}) => {
   const token = await getAuthToken();
   
@@ -36,7 +34,6 @@ const apiRequest = async (endpoint, options = {}) => {
   return await response.json();
 };
 
-// Генерація макету
 export const generateLayout = async (data) => {
   console.log('CALLING BACKEND', API_BASE);
 
@@ -64,45 +61,35 @@ export const generateLayout = async (data) => {
   }
 };
 
-// API для авторизації
 export const authAPI = {
-  // Отримати профіль користувача
   getProfile: () => apiRequest('/api/auth/profile'),
   
-  // Оновити профіль
   updateProfile: (data) => apiRequest('/api/auth/profile', {
     method: 'PUT',
     body: JSON.stringify(data),
   }),
 };
 
-// API для проектів
 export const projectsAPI = {
-  // Отримати всі проекти користувача
   getAll: () => apiRequest('/api/projects'),
   
-  // Створити новий проект
   create: (data) => apiRequest('/api/projects', {
     method: 'POST',
     body: JSON.stringify(data),
   }),
   
-  // Отримати конкретний проект
   getById: (id) => apiRequest(`/api/projects/${id}`),
   
-  // Оновити проект
   update: (id, data) => apiRequest(`/api/projects/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   }),
   
-  // Видалити проект
   delete: (id) => apiRequest(`/api/projects/${id}`, {
     method: 'DELETE',
   }),
 };
 
-// Перевірка здоров'я сервера
 export const healthCheck = async () => {
   try {
     const response = await fetch(`${API_BASE}/health`);

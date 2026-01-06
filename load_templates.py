@@ -2,9 +2,7 @@ import os
 import psycopg2
 from sentence_transformers import SentenceTransformer
 
-# =====================
-# НАЛАШТУВАННЯ
-# =====================
+
 TEMPLATES_DIR = r"C:\Users\кіра\Desktop\temples"
 
 DB_CONFIG = {
@@ -15,13 +13,11 @@ DB_CONFIG = {
     "port": 5432
 }
 
-# embedding 384
+
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
 
-# =====================
-# ДОПОМІЖНІ ФУНКЦІЇ
-# =====================
+
 def parse_description(path):
     data = {
         "name": None,
@@ -52,9 +48,7 @@ def read_file(path):
         return f.read()
 
 
-# =====================
-# ОСНОВНА ЛОГІКА
-# =====================
+
 conn = psycopg2.connect(**DB_CONFIG)
 cur = conn.cursor()
 
@@ -68,14 +62,14 @@ for folder in os.listdir(TEMPLATES_DIR):
     css_path = os.path.join(folder_path, "style.css")
 
     if not os.path.exists(desc_path) or not os.path.exists(html_path):
-        print(f"⚠️ Пропущено {folder}")
+        print(f" Пропущено {folder}")
         continue
 
     desc = parse_description(desc_path)
     html = read_file(html_path)
     css = read_file(css_path)
 
-    # текст для embedding
+
     embedding_text = f"""
     Name: {desc['name']}
     Category: {desc['category']}
@@ -98,10 +92,10 @@ for folder in os.listdir(TEMPLATES_DIR):
         css
     ))
 
-    print(f"✅ Додано: {desc['name']}")
+    print(f" Додано: {desc['name']}")
 
 conn.commit()
 cur.close()
 conn.close()
 
-print("🎉 Усі шаблони завантажено")
+print(" Усі шаблони завантажено")

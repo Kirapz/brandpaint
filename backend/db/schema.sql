@@ -1,4 +1,4 @@
--- Таблиця користувачів
+
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     firebase_uid VARCHAR(128) UNIQUE NOT NULL,
@@ -8,7 +8,6 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Таблиця проектів
 CREATE TABLE projects (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -23,7 +22,6 @@ CREATE TABLE projects (
     updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Таблиця шаблонів
 CREATE TABLE templates (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -35,7 +33,6 @@ CREATE TABLE templates (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Індекси для оптимізації
 CREATE INDEX idx_users_firebase_uid ON users(firebase_uid);
 CREATE INDEX idx_projects_user_id ON projects(user_id);
 CREATE INDEX idx_projects_public ON projects(is_public);

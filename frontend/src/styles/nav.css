@@ -2,7 +2,6 @@
   --navbar-height: 64px;
 }
 
-/* Global box sizing + basic reset */
 *,
 *::before,
 *::after {
@@ -17,7 +16,6 @@ html, body, #root {
   overflow-x: hidden;
 }
 
-/* NAVBAR */
 .navbar {
   position: absolute;
   top: 0;
@@ -30,20 +28,15 @@ html, body, #root {
   padding: 0 24px;
   z-index: 1000;
 
-  /* прозорість / скляний вигляд (залишаю як у тебе) */
   background: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border: none !important;
   box-shadow: none !important;
-
-  /* Увага: pointer-events: none робить навбар "прозорим" для подій.
-     Якщо у тебе бувають проблеми з клікабельністю, прибери pointer-events: none. */
-  /* pointer-events: none; */
 }
 
 .nav-link {
-  pointer-events: auto; /* якщо navbar має pointer-events: none, іноді це все одно не дає кліків — перевір при потребі */
+  pointer-events: auto; 
   position: relative;
   margin: 0 9px;
   padding: 10px 30px;
@@ -87,7 +80,6 @@ html, body, #root {
     inset 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
-/* CTA button */
 .glass-btn {
   display: inline-block;
   padding: 14px 32px;
@@ -114,9 +106,7 @@ html, body, #root {
 .glass-btn:hover { transform: scale(1.1); color: #e0fff9; }
 .glass-btn:active { transform: scale(0.95); }
 
-/* HOME */
 .home-container {
-  /* забезпечує відступ під navbar і уникає перевищення 100dvh */
   padding-top: var(--navbar-height);
   min-height: calc(100dvh - var(--navbar-height));
   display: flex;
@@ -124,7 +114,6 @@ html, body, #root {
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
-  /* прибрано max-height: 100dvh; воно викликає проблеми на мобільних браузерах */
 }
 
 .home-bg-wrapper {
@@ -134,7 +123,7 @@ html, body, #root {
   top: 0;
   left: 0;
   z-index: -1;
-  overflow: hidden; /* важливо для фонового canvas */
+  overflow: hidden; 
 }
 
 .home-content {
@@ -147,7 +136,6 @@ html, body, #root {
   animation: fadeUp 1s ease forwards;
 }
 
-/* Фокус для кнопки */
 .glass-btn:focus,
 .glass-btn:focus-visible {
   outline: none;
@@ -156,22 +144,20 @@ html, body, #root {
     0 12px 30px rgba(116, 133, 131, 0.45);
 }
 
-/* Анімація появи */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(30px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* MOBILE */
 @media (max-width: 768px) {
-  :root { --navbar-height: 56px; } /* трохи менший на мобайлі */
+  :root { --navbar-height: 56px; } 
 
   .navbar {
     height: auto;
     padding: 15px 10px;
     flex-wrap: wrap;
     gap: 10px;
-    position: fixed; /* фіксована, щоб була завжди зверху */
+    position: fixed;
     backdrop-filter: blur(10px) !important;
   }
 
