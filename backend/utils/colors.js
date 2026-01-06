@@ -131,19 +131,14 @@ function extractExplicitColors(text = '') {
   let explicitBg = false;
   let explicitText = false;
   
-  console.log(' Parsing colors from:', t);
+  console.log('🎨 Parsing colors from:', t);
   
   // Шукаємо фон
-  const bgMatch = t.match(/(?:фон|background)\s*([а-яіїєґa-z\s-]+)|([а-яіїєґa-z\s-]+)\s*(?:фон|background)/i);
+  const bgMatch = t.match(/(?:фон|background)\s+([а-яіїєґa-z-]+)/i);
   if (bgMatch) {
-    const colorWord = (bgMatch[1] || bgMatch[2] || '').split(/,|та|і|and/)[0].trim();
+    const colorWord = bgMatch[1].trim();
     console.log('🔍 Found bg word:', colorWord);
-    const tokens = tokenizeWithIndices(colorWord);
-    let c = null;
-    for (const t of tokens) {
-      c = findColor(t.word);
-      if (c) break;
-    }
+    const c = findColor(colorWord);
     if (c) {
       bg = c;
       explicitBg = true;
@@ -152,16 +147,11 @@ function extractExplicitColors(text = '') {
   }
   
   // Шукаємо текст
-  const textMatch = t.match(/(?:текст|text)\s*([а-яіїєґa-z\s-]+)|([а-яіїєґa-z\s-]+)\s*(?:текст|text)/i);
+  const textMatch = t.match(/(?:текст|text)\s+([а-яіїєґa-z-]+)/i);
   if (textMatch) {
-    const colorWord = (textMatch[1] || textMatch[2] || '').split(/,|та|і|and/)[0].trim();
+    const colorWord = textMatch[1].trim();
     console.log('🔍 Found text word:', colorWord);
-    const tokens = tokenizeWithIndices(colorWord);
-    let c = null;
-    for (const t of tokens) {
-      c = findColor(t.word);
-      if (c) break;
-    }
+    const c = findColor(colorWord);
     if (c) {
       textColor = c;
       explicitText = true;

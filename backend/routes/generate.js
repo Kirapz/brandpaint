@@ -32,20 +32,26 @@ function hasColorIntent(text) {
 }
 
 function buildPalette(userColors) {
-  const bg = userColors.bg ?? '#ffffff';
+  const bg = userColors?.bg ?? '#ffffff';
   let text;
-  if (userColors.explicitText) {
-    text = userColors.text; // ❗ поважаємо користувача
-  } else if (userColors.text) {
-    text = userColors.text; // знайдено, але не явно
+
+  if (userColors?.explicitText && userColors.text) {
+    text = userColors.text;
+  } else if (userColors?.text) {
+    text = userColors.text;
   } else {
-    text = contrast(bg); // авто
+    text = contrast(bg);
   }
-  
+
+  if (bg === text) {
+    text = contrast(bg);
+  }
+
   const accent = bg;
   const buttonText = getBetterContrast(accent);
   return { bg, text, accent, buttonText };
 }
+
 
 function scoreAndSelectTemplate(templates, categories, userText) {
   const userWords = userText.toLowerCase()
