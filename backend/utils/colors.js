@@ -175,7 +175,7 @@ function extractExplicitColors(text = '') {
           if (c) { bg = c; explicitBg = true; break; }
         }
       }
-    
+    }
 
     if (textMatch) {
       const keyIdxInPart = textMatch.index;
@@ -202,7 +202,7 @@ function extractExplicitColors(text = '') {
           if (c) { textColor = c; explicitText = true; break; }
         }
       }
-    
+    }
   }
 
   // Do not guess colors from unrelated words — only return colors explicitly tied to "фон" or "текст"
@@ -275,4 +275,4 @@ module.exports = {
   getBetterContrast,
   calculateContrastRatio,
   getRelativeLuminance
-};
+}
