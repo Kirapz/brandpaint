@@ -65,7 +65,6 @@ function findColor(word) {
   
   const wordLower = word.toLowerCase();
   
-  // Перевіряємо складені кольори спочатку
   for (const [colorName, colorData] of Object.entries(COLORS)) {
     if (colorName.includes('dark') || colorName.includes('light') || 
         colorName === 'cherry' || colorName === 'turquoise' || 
@@ -131,46 +130,43 @@ function extractColorNearKeyword(part, keyword, findColor) {
 }
 
 function extractExplicitColors(text = '') {
-  const t = (text || '').toLowerCase();
-  if (!t.trim()) return { bg: null, text: null, explicitBg: false, explicitText: false };
-  
+  const t = text.toLowerCase();
+  if (!t.trim()) {
+    return { bg: null, text: null, explicitBg: false, explicitText: false };
+  }
+
+  const tokens = tokenizeWithIndices(t);
+
   let bg = null;
   let textColor = null;
   let explicitBg = false;
   let explicitText = false;
-  
-  console.log('🎨 Parsing colors from:', t);
-  
-  // Розділяємо на частини по комах та сполучниках
-  const parts = t.split(/\s*(?:,|\bта\b|\band\b|\bі\b)\s*/).map(p => p.trim());
-  
-  for (const part of parts) {
-    console.log('🔍 Processing part:', part);
-    
-    // Шукаємо фон в цій частині
-    if (!bg) {
-      const c = extractColorNearKeyword(part, 'фон|background', findColor);
-      if (c) {
-        bg = c;
-        explicitBg = true;
-        console.log('✅ Bg color:', c);
+
+  const usedTokenIndexes = new Set();
+
+  for (const token of tokens) {
+    if ((token.word === 'текст' || token.word === 'text') && !textColor) {
+      const nearest = findNearestColorToken(tokens, token.index);
+      if (nearest && !usedTokenIndexes.has(nearest.index)) {
+        textColor = nearest.hex;
+        explicitText = true;
+        usedTokenIndexes.add(nearest.index);
       }
     }
-    
-    // Шукаємо текст в цій частині
-    if (!textColor) {
-      const c = extractColorNearKeyword(part, 'текст|text', findColor);
-      if (c) {
-        textColor = c;
-        explicitText = true;
-        console.log('✅ Text color:', c);
+
+    if ((token.word === 'фон' || token.word === 'background') && !bg) {
+      const nearest = findNearestColorToken(tokens, token.index);
+      if (nearest && !usedTokenIndexes.has(nearest.index)) {
+        bg = nearest.hex;
+        explicitBg = true;
+        usedTokenIndexes.add(nearest.index);
       }
     }
   }
-  
-  console.log(' Final result:', { bg, text: textColor, explicitBg, explicitText });
+
   return { bg, text: textColor, explicitBg, explicitText };
-} 
+}
+
 
 function contrast(hex) {
   if (!hex || hex === 'null' || hex === null) return '#000000';
@@ -197,12 +193,10 @@ function contrast(hex) {
 function getBetterContrast(bgHex, preferredTextHex = null) {
   if (!bgHex) return '#000000';
 
-  // If the user explicitly provided a preferred text color, respect it as-is
   if (preferredTextHex) {
     return preferredTextHex;
   }
 
-  // otherwise compute a readable contrast color
   return contrast(bgHex);
 }
 
