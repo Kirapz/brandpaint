@@ -134,7 +134,7 @@ function extractExplicitColors(text = '') {
   console.log('🎨 Parsing colors from:', t);
   
   // Розділяємо на частини по комах та сполучниках
-  const parts = t.split(/,|та|і|and/).map(p => p.trim());
+  const parts = t.split(/\s*(?:,|\bта\b|\band\b|\bі\b)\s*/).map(p => p.trim());
   
   for (const part of parts) {
     console.log('🔍 Processing part:', part);
