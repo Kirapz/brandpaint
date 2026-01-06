@@ -122,6 +122,14 @@ function findNearestColorToken(allTokens, globalIdx) {
   return best;
 }
 
+function extractColorNearKeyword(part, keyword, findColor) {
+  const regex = new RegExp(`(?:${keyword})\\s+([а-яіїєґa-z-]+)|([а-яіїєґa-z-]+)\\s+(?:${keyword})`, 'i');
+  const m = part.match(regex);
+  if (!m) return null;
+  const word = m[1] ?? m[2];
+  return findColor(word);
+}
+
 function extractExplicitColors(text = '') {
   const t = (text || '').toLowerCase();
   if (!t.trim()) return { bg: null, text: null, explicitBg: false, explicitText: false };
@@ -139,33 +147,23 @@ function extractExplicitColors(text = '') {
   for (const part of parts) {
     console.log('🔍 Processing part:', part);
     
-    // Шукаємо фон в цій частині (з обох сторін)
-    if (!bg && /(?:фон|background)/.test(part)) {
-      const bgMatch = part.match(/(?:фон|background)\s+([а-яіїєґa-z-]+)|([а-яіїєґa-z-]+)\s+(?:фон|background)/i);
-      if (bgMatch) {
-        const colorWord = (bgMatch[1] || bgMatch[2] || '').trim();
-        console.log('🔍 Found bg word:', colorWord);
-        const c = findColor(colorWord);
-        if (c) {
-          bg = c;
-          explicitBg = true;
-          console.log('✅ Bg color:', c);
-        }
+    // Шукаємо фон в цій частині
+    if (!bg) {
+      const c = extractColorNearKeyword(part, 'фон|background', findColor);
+      if (c) {
+        bg = c;
+        explicitBg = true;
+        console.log('✅ Bg color:', c);
       }
     }
     
-    // Шукаємо текст в цій частині (з обох сторін)
-    if (!textColor && /(?:текст|text)/.test(part)) {
-      const textMatch = part.match(/(?:текст|text)\s+([а-яіїєґa-z-]+)|([а-яіїєґa-z-]+)\s+(?:текст|text)/i);
-      if (textMatch) {
-        const colorWord = (textMatch[1] || textMatch[2] || '').trim();
-        console.log('🔍 Found text word:', colorWord);
-        const c = findColor(colorWord);
-        if (c) {
-          textColor = c;
-          explicitText = true;
-          console.log('✅ Text color:', c);
-        }
+    // Шукаємо текст в цій частині
+    if (!textColor) {
+      const c = extractColorNearKeyword(part, 'текст|text', findColor);
+      if (c) {
+        textColor = c;
+        explicitText = true;
+        console.log('✅ Text color:', c);
       }
     }
   }
