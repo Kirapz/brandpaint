@@ -213,8 +213,8 @@ router.post('/', async (req, res) => {
     const colorIntent = hasColorIntent(userText);
     const userColors = extractExplicitColors(userText);
     
-    console.log('🎨 Extracted colors:', userColors);
-    console.log('🎨 User text input:', userText);
+    console.log(' Extracted colors:', userColors);
+    console.log(' User text input:', userText);
     
     if (userColors.bg && userColors.text && userColors.bg === userColors.text && !userColors.explicitText) {
       userColors.text = getBetterContrast(userColors.bg);

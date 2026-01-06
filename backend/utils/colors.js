@@ -133,29 +133,40 @@ function extractExplicitColors(text = '') {
   
   console.log('🎨 Parsing colors from:', t);
   
-  // Шукаємо фон
-  const bgMatch = t.match(/(?:фон|background)\s+([а-яіїєґa-z-]+)/i);
-  if (bgMatch) {
-    const colorWord = bgMatch[1].trim();
-    console.log('🔍 Found bg word:', colorWord);
-    const c = findColor(colorWord);
-    if (c) {
-      bg = c;
-      explicitBg = true;
-      console.log('✅ Bg color:', c);
-    }
-  }
+  // Розділяємо на частини по комах та сполучниках
+  const parts = t.split(/,|та|і|and/).map(p => p.trim());
   
-  // Шукаємо текст
-  const textMatch = t.match(/(?:текст|text)\s+([а-яіїєґa-z-]+)/i);
-  if (textMatch) {
-    const colorWord = textMatch[1].trim();
-    console.log('🔍 Found text word:', colorWord);
-    const c = findColor(colorWord);
-    if (c) {
-      textColor = c;
-      explicitText = true;
-      console.log('✅ Text color:', c);
+  for (const part of parts) {
+    console.log('🔍 Processing part:', part);
+    
+    // Шукаємо фон в цій частині (з обох сторін)
+    if (!bg && /(?:фон|background)/.test(part)) {
+      const bgMatch = part.match(/(?:фон|background)\s+([а-яіїєґa-z-]+)|([а-яіїєґa-z-]+)\s+(?:фон|background)/i);
+      if (bgMatch) {
+        const colorWord = (bgMatch[1] || bgMatch[2] || '').trim();
+        console.log('🔍 Found bg word:', colorWord);
+        const c = findColor(colorWord);
+        if (c) {
+          bg = c;
+          explicitBg = true;
+          console.log('✅ Bg color:', c);
+        }
+      }
+    }
+    
+    // Шукаємо текст в цій частині (з обох сторін)
+    if (!textColor && /(?:текст|text)/.test(part)) {
+      const textMatch = part.match(/(?:текст|text)\s+([а-яіїєґa-z-]+)|([а-яіїєґa-z-]+)\s+(?:текст|text)/i);
+      if (textMatch) {
+        const colorWord = (textMatch[1] || textMatch[2] || '').trim();
+        console.log('🔍 Found text word:', colorWord);
+        const c = findColor(colorWord);
+        if (c) {
+          textColor = c;
+          explicitText = true;
+          console.log('✅ Text color:', c);
+        }
+      }
     }
   }
   
