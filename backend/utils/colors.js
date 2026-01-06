@@ -67,7 +67,6 @@ function findColor(word) {
   if (!word) return null;
   
   const wordLower = word.toLowerCase();
-  console.log('🔍 Testing color word:', wordLower);
   
   // Перевіряємо складені кольори спочатку
   for (const [colorName, colorData] of Object.entries(COLORS)) {
@@ -75,7 +74,6 @@ function findColor(word) {
         colorName === 'cherry' || colorName === 'turquoise' || 
         colorName === 'silver' || colorName === 'gold') {
       if (colorData.rx.test(wordLower)) {
-        console.log('✅ Compound color match:', colorName, '→', colorData.hex);
         return colorData.hex;
       }
     }
@@ -84,12 +82,10 @@ function findColor(word) {
   // Потім основні кольори
   for (const [colorName, colorData] of Object.entries(COLORS)) {
     if (colorData.rx.test(wordLower)) {
-      console.log('✅ Basic color match:', colorName, '→', colorData.hex);
       return colorData.hex;
     }
   }
   
-  console.log('❌ No color match for:', wordLower);
   return null;
 }
 
@@ -132,87 +128,42 @@ function findNearestColorToken(allTokens, globalIdx) {
 function extractExplicitColors(text = '') {
   const t = (text || '').toLowerCase();
   if (!t.trim()) return { bg: null, text: null, explicitBg: false, explicitText: false };
-  const allTokens = tokenizeWithIndices(t);
+  
   let bg = null;
   let textColor = null;
   let explicitBg = false;
   let explicitText = false;
-  const parts = t.split(',').map(p => p.trim());
-  let searchCursor = 0; 
-
-  for (const part of parts) {
-    const partStart = Math.max(0, t.indexOf(part, searchCursor));
-    searchCursor = partStart + part.length;
-    const fonRx = /(?:фон|background)/i;
-    const textRx = /(?:текст|text)/i;
-    const fonMatch = fonRx.exec(part);
-    const textMatch = textRx.exec(part);
-
-    const checkNeighbors = (globalKeyIdx) => {
-      if (!allTokens.length) return null;
-      let idx = allTokens.findIndex(tok => tok.index > globalKeyIdx);
-      if (idx === -1) idx = allTokens.length;
-      const candidates = [];
-      if (allTokens[idx]) candidates.push(allTokens[idx]);
-      if (allTokens[idx - 1]) candidates.push(allTokens[idx - 1]);
-      for (const cand of candidates) {
-        const c = findColor(cand.word);
-        if (c) return { hex: c, word: cand.word, index: cand.index };
-      }
-      return null;
-    }; 
-
-    if (fonMatch) {
-      const keyIdxInPart = fonMatch.index;
-      const keyGlobal = partStart + keyIdxInPart;
-      const near = checkNeighbors(keyGlobal);
-      if (near) { bg = near.hex; explicitBg = true; }
-      const pMatchDirect = part.match(/(?:фон|background)\s*([а-яіїєґa-z]+(?:[\s-][а-яіїєґa-z]+)*)|([а-яіїєґa-z]+(?:[\s-][а-яіїєґa-z]+)*)\s*(?:фон|background)/i);
-      if (pMatchDirect) {
-        const colorWord = (pMatchDirect[1] || pMatchDirect[2] || '').trim();
-        console.log('🔍 Found bg color word:', colorWord);
-        const c = findColor(colorWord);
-        if (c) { 
-          bg = c; 
-          explicitBg = true;
-          console.log('✅ Bg color found:', c);
-        } else {
-          console.log('❌ Bg color not recognized:', colorWord);
-        }
-      }
-      // ❌ ВИДАЛЕНО небезпечний fallback блок
-    }
-
-    if (textMatch) {
-      const keyIdxInPart = textMatch.index;
-      const keyGlobal = partStart + keyIdxInPart;
-      const near = checkNeighbors(keyGlobal);
-      if (near) { textColor = near.hex; explicitText = true; }
-      const pMatchDirect = part.match(/(?:текст|text)\s*([а-яіїєґa-z]+(?:[\s-][а-яіїєґa-z]+)*)|([а-яіїєґa-z]+(?:[\s-][а-яіїєґa-z]+)*)\s*(?:текст|text)/i);
-      if (pMatchDirect) {
-        const colorWord = (pMatchDirect[1] || pMatchDirect[2] || '').trim();
-        console.log('🔍 Found text color word:', colorWord);
-        const c = findColor(colorWord);
-        if (c) { 
-          textColor = c; 
-          explicitText = true;
-          console.log('✅ Text color found:', c);
-        } else {
-          console.log('❌ Text color not recognized:', colorWord);
-        }
-      }
-      const lightDark = part.match(/\b(світл|темн|light|dark)\b/i);
-      if (!textColor && lightDark) {
-        const w = lightDark[0].toLowerCase();
-        textColor = /світл|light/.test(w) ? '#020617' : '#ffffff';
-        explicitText = true;
-      }
-      // ❌ ВИДАЛЕНО небезпечний fallback блок для тексту
+  
+  console.log('🎨 Parsing colors from:', t);
+  
+  // Шукаємо фон
+  const bgMatch = t.match(/(?:фон|background)\s*([а-яіїєґa-z\s-]+)|([а-яіїєґa-z\s-]+)\s*(?:фон|background)/i);
+  if (bgMatch) {
+    const colorWord = (bgMatch[1] || bgMatch[2] || '').trim();
+    console.log('🔍 Found bg word:', colorWord);
+    const c = findColor(colorWord);
+    if (c) {
+      bg = c;
+      explicitBg = true;
+      console.log('✅ Bg color:', c);
     }
   }
-
-  // Do not guess colors from unrelated words — only return colors explicitly tied to "фон" or "текст"
-  return { bg: bg || null, text: textColor || null, explicitBg: !!explicitBg, explicitText: !!explicitText };
+  
+  // Шукаємо текст
+  const textMatch = t.match(/(?:текст|text)\s*([а-яіїєґa-z\s-]+)|([а-яіїєґa-z\s-]+)\s*(?:текст|text)/i);
+  if (textMatch) {
+    const colorWord = (textMatch[1] || textMatch[2] || '').trim();
+    console.log('🔍 Found text word:', colorWord);
+    const c = findColor(colorWord);
+    if (c) {
+      textColor = c;
+      explicitText = true;
+      console.log('✅ Text color:', c);
+    }
+  }
+  
+  console.log('🎨 Final result:', { bg, text: textColor, explicitBg, explicitText });
+  return { bg, text: textColor, explicitBg, explicitText };
 } 
 
 function contrast(hex) {
