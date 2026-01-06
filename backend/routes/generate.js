@@ -191,6 +191,8 @@ router.post('/', async (req, res) => {
     const colorIntent = hasColorIntent(userText);
     const userColors = extractExplicitColors(userText);
     
+    console.log('🎨 Extracted colors:', userColors);
+    
     if (userColors.bg && userColors.text && userColors.bg === userColors.text && !userColors.explicitText) {
       userColors.text = getBetterContrast(userColors.bg);
     } 
@@ -200,7 +202,10 @@ router.post('/', async (req, res) => {
         return res.json({ success: true, data: { html, css: template.css_content } });
       }
       const bg = userColors.bg ?? '#ffffff';
-      let text = userColors.text ?? getBetterContrast(bg);
+      let text = userColors.text;
+      if (!text) {
+        text = getBetterContrast(bg);
+      }
       
       if (text === bg) {
         text = contrast(bg);
@@ -219,7 +224,10 @@ router.post('/', async (req, res) => {
       palette = { bg: '#ffffff', text: '#020617', accent: '#020617', buttonText: '#020617' };
     } else {
       const bg = userColors.bg ?? '#ffffff';
-      let text = userColors.text ?? getBetterContrast(bg);
+      let text = userColors.text;
+      if (!text) {
+        text = getBetterContrast(bg);
+      }
       
       if (text === bg) {
         text = contrast(bg);
