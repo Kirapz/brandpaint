@@ -142,11 +142,29 @@ function extractExplicitColors(text = '') {
 
     const checkNeighbors = (globalKeyIdx) => {
       if (!allTokens.length) return null;
+      const partEnd = partStart + part.length;
+      // prefer tokens inside the same comma-separated part
+      const tokensInPart = allTokens.filter(tok => tok.index >= partStart && tok.index < partEnd);
+      if (tokensInPart.length) {
+        let best = null;
+        let bestDist = Infinity;
+        for (const tok of tokensInPart) {
+          const c = findColor(tok.word);
+          if (!c) continue;
+          const dist = Math.abs(tok.index - globalKeyIdx);
+          if (dist < bestDist) {
+            bestDist = dist;
+            best = { hex: c, word: tok.word, index: tok.index };
+          }
+        }
+        if (best) return best;
+      }
+      // fallback: try nearby tokens across entire text, prefer previous token
       let idx = allTokens.findIndex(tok => tok.index > globalKeyIdx);
       if (idx === -1) idx = allTokens.length;
       const candidates = [];
-      if (allTokens[idx]) candidates.push(allTokens[idx]);
       if (allTokens[idx - 1]) candidates.push(allTokens[idx - 1]);
+      if (allTokens[idx]) candidates.push(allTokens[idx]);
       for (const cand of candidates) {
         const c = findColor(cand.word);
         if (c) return { hex: c, word: cand.word, index: cand.index };
@@ -159,7 +177,7 @@ function extractExplicitColors(text = '') {
       const keyGlobal = partStart + keyIdxInPart;
       const near = checkNeighbors(keyGlobal);
       if (near) bg = near.hex;
-      const pMatchDirect = part.match(/(?:фон|background)\s*([а-яіїєґa-z]+)|([а-яіїєґa-z]+)\s*(?:фон|background)/i);
+      const pMatchDirect = part.match(/(?:фон|background)\s*([а-яіїєґa-z]+(?:[\s-][а-яіїєґa-z]+)*)|([а-яіїєґa-z]+(?:[\s-][а-яіїєґa-z]+)*)\s*(?:фон|background)/i);
       if (pMatchDirect) {
         const colorWord = (pMatchDirect[1] || pMatchDirect[2] || '').trim();
         const c = findColor(colorWord);
@@ -184,7 +202,7 @@ function extractExplicitColors(text = '') {
       const keyGlobal = partStart + keyIdxInPart;
       const near = checkNeighbors(keyGlobal);
       if (near) textColor = near.hex;
-      const pMatchDirect = part.match(/(?:текст|text)\s*([а-яіїєґa-z]+)|([а-яіїєґa-z]+)\s*(?:текст|text)/i);
+      const pMatchDirect = part.match(/(?:текст|text)\s*([а-яіїєґa-z]+(?:[\s-][а-яіїєґa-z]+)*)|([а-яіїєґa-z]+(?:[\s-][а-яіїєґa-z]+)*)\s*(?:текст|text)/i);
       if (pMatchDirect) {
         const colorWord = (pMatchDirect[1] || pMatchDirect[2] || '').trim();
         const c = findColor(colorWord);
