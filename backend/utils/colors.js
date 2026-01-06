@@ -22,17 +22,17 @@ const COLORS = {
   gold: { hex: '#d4af37', rx: /(золот|gold)/i },
   
   green: { hex: '#16a34a', rx: /(зелен|green)(?!\s*(?:темн|світл|dark|light|салат))/i },
-  darkgreen: { hex: '#14532d', rx: /(темно[\s-]?зелен|темн[\s-]?зелен|dark[\s-]?green|болотн)/i },
+  darkgreen: { hex: '#0a4d24ff', rx: /(темно[\s-]?зелен|темн[\s-]?зелен|dark[\s-]?green|болотн)/i },
   lightgreen: { hex: '#bbf7d0', rx: /(світло[\s-]?зелен|світл[\s-]?зелен|light[\s-]?green|салатов)/i },
   
   blue: { hex: '#2563eb', rx: /(син|blue)(?!\s*(?:темн|світл|dark|light))/i },
-  darkblue: { hex: '#1e3a8a', rx: /(темно[\s-]?син|темн[\s-]?син|dark[\s-]?blue)/i },
+  darkblue: { hex: '#041546ff', rx: /(темно[\s-]?син|темн[\s-]?син|dark[\s-]?blue)/i },
   lightblue: { hex: '#bfdbfe', rx: /(світло[\s-]?син|світл[\s-]?син|light[\s-]?blue|блакитн)/i },
   navy: { hex: '#1e40af', rx: /(темно[\s-]?блакитн|navy)/i },
   
   purple: { hex: '#7c3aed', rx: /(фіолет|purple)(?!\s*(?:темн|світл|dark|light))/i },
   darkpurple: { hex: '#581c87', rx: /(темно[\s-]?фіолет|темн[\s-]?фіолет|dark[\s-]?purple)/i },
-  lightpurple: { hex: '#ddd6fe', rx: /(світло[\s-]?фіолет|світл[\s-]?фіолет|light[\s-]?purple)/i },
+  lightpurple: { hex: '#a69adaff', rx: /(світло[\s-]?фіолет|світл[\s-]?фіолет|light[\s-]?purple)/i },
   
   brown: { hex: '#92400e', rx: /(коричнев|brown)(?!\s*(?:темн|світл|dark|light))/i },
   darkbrown: { hex: '#451a03', rx: /(темно[\s-]?коричнев|темн[\s-]?коричнев|dark[\s-]?brown)/i },
@@ -125,12 +125,14 @@ function findNearestColorToken(allTokens, globalIdx) {
 
 function extractExplicitColors(text = '') {
   const t = (text || '').toLowerCase();
-  if (!t.trim()) return { bg: null, text: null };
+  if (!t.trim()) return { bg: null, text: null, explicitBg: false, explicitText: false };
   const allTokens = tokenizeWithIndices(t);
   let bg = null;
   let textColor = null;
+  let explicitBg = false;
+  let explicitText = false;
   const parts = t.split(',').map(p => p.trim());
-  let searchCursor = 0;
+  let searchCursor = 0; 
 
   for (const part of parts) {
     const partStart = Math.max(0, t.indexOf(part, searchCursor));
@@ -142,98 +144,70 @@ function extractExplicitColors(text = '') {
 
     const checkNeighbors = (globalKeyIdx) => {
       if (!allTokens.length) return null;
-      const partEnd = partStart + part.length;
-      // prefer tokens inside the same comma-separated part
-      const tokensInPart = allTokens.filter(tok => tok.index >= partStart && tok.index < partEnd);
-      if (tokensInPart.length) {
-        let best = null;
-        let bestDist = Infinity;
-        for (const tok of tokensInPart) {
-          const c = findColor(tok.word);
-          if (!c) continue;
-          const dist = Math.abs(tok.index - globalKeyIdx);
-          if (dist < bestDist) {
-            bestDist = dist;
-            best = { hex: c, word: tok.word, index: tok.index };
-          }
-        }
-        if (best) return best;
-      }
-      // fallback: try nearby tokens across entire text, prefer previous token
       let idx = allTokens.findIndex(tok => tok.index > globalKeyIdx);
       if (idx === -1) idx = allTokens.length;
       const candidates = [];
-      if (allTokens[idx - 1]) candidates.push(allTokens[idx - 1]);
       if (allTokens[idx]) candidates.push(allTokens[idx]);
+      if (allTokens[idx - 1]) candidates.push(allTokens[idx - 1]);
       for (const cand of candidates) {
         const c = findColor(cand.word);
         if (c) return { hex: c, word: cand.word, index: cand.index };
       }
       return null;
-    };
+    }; 
 
     if (fonMatch) {
       const keyIdxInPart = fonMatch.index;
       const keyGlobal = partStart + keyIdxInPart;
       const near = checkNeighbors(keyGlobal);
-      if (near) bg = near.hex;
+      if (near) { bg = near.hex; explicitBg = true; }
       const pMatchDirect = part.match(/(?:фон|background)\s*([а-яіїєґa-z]+(?:[\s-][а-яіїєґa-z]+)*)|([а-яіїєґa-z]+(?:[\s-][а-яіїєґa-z]+)*)\s*(?:фон|background)/i);
       if (pMatchDirect) {
         const colorWord = (pMatchDirect[1] || pMatchDirect[2] || '').trim();
         const c = findColor(colorWord);
-        if (c) bg = c;
+        if (c) { bg = c; explicitBg = true; }
       }
-      if (!bg) {
-        const nearest = findNearestColorToken(allTokens, keyGlobal);
-        if (nearest) bg = nearest.hex;
-      }
-    } else {
+      // if direct capture didn't find a full color, scan tokens inside the same part to find a color (respect explicit 'фон' context)
       if (!bg) {
         const tokensInPart = tokenizeWithIndices(part);
         for (const tk of tokensInPart) {
           const c = findColor(tk.word);
-          if (c) { bg = c; break; }
+          if (c) { bg = c; explicitBg = true; break; }
         }
       }
-    }
+    
 
     if (textMatch) {
       const keyIdxInPart = textMatch.index;
       const keyGlobal = partStart + keyIdxInPart;
       const near = checkNeighbors(keyGlobal);
-      if (near) textColor = near.hex;
+      if (near) { textColor = near.hex; explicitText = true; }
       const pMatchDirect = part.match(/(?:текст|text)\s*([а-яіїєґa-z]+(?:[\s-][а-яіїєґa-z]+)*)|([а-яіїєґa-z]+(?:[\s-][а-яіїєґa-z]+)*)\s*(?:текст|text)/i);
       if (pMatchDirect) {
         const colorWord = (pMatchDirect[1] || pMatchDirect[2] || '').trim();
         const c = findColor(colorWord);
-        if (c) textColor = c;
-      }
-      if (!textColor) {
-        const nearest = findNearestColorToken(allTokens, keyGlobal);
-        if (nearest) textColor = nearest.hex;
+        if (c) { textColor = c; explicitText = true; }
       }
       const lightDark = part.match(/\b(світл|темн|light|dark)\b/i);
       if (!textColor && lightDark) {
         const w = lightDark[0].toLowerCase();
         textColor = /світл|light/.test(w) ? '#020617' : '#ffffff';
+        explicitText = true;
       }
-    } else {
+      // if direct capture didn't find a full color, scan tokens inside the same part to find a color (respect explicit 'текст' context)
       if (!textColor) {
         const tokensInPart = tokenizeWithIndices(part);
         for (const tk of tokensInPart) {
           const c = findColor(tk.word);
-          if (c) { textColor = c; break; }
+          if (c) { textColor = c; explicitText = true; break; }
         }
       }
-    }
+    
   }
 
-  const allColorTokens = allTokens.map(tk => ({ ...tk, color: findColor(tk.word) })).filter(x => x.color);
-  if (!bg && allColorTokens.length) bg = allColorTokens[allColorTokens.length - 1].color;
-  if (!textColor && allColorTokens.length) textColor = allColorTokens[0].color;
-
-  return { bg: bg || null, text: textColor || null };
-}
+  // Do not guess colors from unrelated words — only return colors explicitly tied to "фон" or "текст"
+  return { bg: bg || null, text: textColor || null, explicitBg: !!explicitBg, explicitText: !!explicitText };
+} 
 
 function contrast(hex) {
   if (!hex || hex === 'null' || hex === null) return '#000000';
@@ -259,14 +233,13 @@ function contrast(hex) {
 
 function getBetterContrast(bgHex, preferredTextHex = null) {
   if (!bgHex) return '#000000';
-  
+
+  // If the user explicitly provided a preferred text color, respect it as-is
   if (preferredTextHex) {
-    const contrastRatio = calculateContrastRatio(bgHex, preferredTextHex);
-    if (contrastRatio >= 4.5) { // WCAG AA стандарт
-      return preferredTextHex;
-    }
+    return preferredTextHex;
   }
-  
+
+  // otherwise compute a readable contrast color
   return contrast(bgHex);
 }
 

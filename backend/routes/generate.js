@@ -191,9 +191,9 @@ router.post('/', async (req, res) => {
     const colorIntent = hasColorIntent(userText);
     const userColors = extractExplicitColors(userText);
     
-    if (userColors.bg && userColors.text && userColors.bg === userColors.text) {
+    if (userColors.bg && userColors.text && userColors.bg === userColors.text && !userColors.explicitText) {
       userColors.text = getBetterContrast(userColors.bg);
-    }
+    } 
 
     if (!preset || preset === 'default') {
       if (!colorIntent) {
@@ -211,7 +211,7 @@ router.post('/', async (req, res) => {
       const palette = { bg, text, accent, buttonText };
 
       const css = applyTheme(template.css_content, palette, {});
-      return res.json({ success: true, data: { html, css } });
+      return res.json({ success: true, data: { html, css } }); 
     }
 
     let palette;
