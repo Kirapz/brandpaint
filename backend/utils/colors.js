@@ -121,6 +121,23 @@ function findNearestColorToken(allTokens, globalIdx) {
   return best;
 }
 
+function findColorNearIndex(tokens, index, maxDistance = 25) {
+  let best = null;
+  for (const t of tokens) {
+    const c = findColor(t.word);
+    if (!c) continue;
+    
+    const dist = Math.abs(t.index - index);
+    if (dist <= maxDistance) {
+      if (!best || dist < best.dist) {
+        best = { hex: c, dist };
+      }
+    }
+  }
+  
+  return best?.hex ?? null;
+}
+
 function extractColorNearKeyword(part, keyword, findColor) {
   const regex = new RegExp(`(?:${keyword})\\s+([а-яіїєґa-z-]+)|([а-яіїєґa-z-]+)\\s+(?:${keyword})`, 'i');
   const m = part.match(regex);
@@ -142,24 +159,20 @@ function extractExplicitColors(text = '') {
   let explicitBg = false;
   let explicitText = false;
 
-  const usedTokenIndexes = new Set();
-
   for (const token of tokens) {
     if ((token.word === 'текст' || token.word === 'text') && !textColor) {
-      const nearest = findNearestColorToken(tokens, token.index);
-      if (nearest && !usedTokenIndexes.has(nearest.index)) {
-        textColor = nearest.hex;
+      const found = findColorNearIndex(tokens, token.index);
+      if (found) {
+        textColor = found;
         explicitText = true;
-        usedTokenIndexes.add(nearest.index);
       }
     }
 
     if ((token.word === 'фон' || token.word === 'background') && !bg) {
-      const nearest = findNearestColorToken(tokens, token.index);
-      if (nearest && !usedTokenIndexes.has(nearest.index)) {
-        bg = nearest.hex;
+      const found = findColorNearIndex(tokens, token.index);
+      if (found) {
+        bg = found;
         explicitBg = true;
-        usedTokenIndexes.add(nearest.index);
       }
     }
   }
