@@ -189,7 +189,15 @@ router.post('/', async (req, res) => {
       }
     }
     
-    const userText = `${description} ${keywords.join(' ')}`.trim();
+    // Якщо keywords це рядок з комами, розділяємо
+    let keywordsArray = keywords;
+    if (typeof keywords === 'string') {
+      keywordsArray = keywords.split(',').map(k => k.trim()).filter(k => k);
+    } else if (!Array.isArray(keywords)) {
+      keywordsArray = [];
+    }
+    
+    const userText = `${description}, ${keywordsArray.join(', ')}`.trim();
     console.log('\n=== QUERY ===');
     console.log('Text:', userText.substring(0, 50));
     console.log('Brand:', brandName);
