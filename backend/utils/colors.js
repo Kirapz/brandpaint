@@ -152,31 +152,49 @@ function extractExplicitColors(text = '') {
     return { bg: null, text: null, explicitBg: false, explicitText: false };
   }
 
-  const tokens = tokenizeWithIndices(t);
-
   let bg = null;
   let textColor = null;
   let explicitBg = false;
   let explicitText = false;
 
-  for (const token of tokens) {
-    if ((token.word === 'текст' || token.word === 'text') && !textColor) {
-      const found = findColorNearIndex(tokens, token.index);
-      if (found) {
-        textColor = found;
-        explicitText = true;
+  console.log('🎨 Parsing:', t);
+
+  // Розділяємо по комах - кожна частина незалежна
+  const parts = t.split(',').map(p => p.trim());
+
+  for (const part of parts) {
+    console.log('🔍 Part:', part);
+    
+    // Якщо в цій частині є "фон" - шукаємо колір ТІЛЬКИ тут
+    if (/фон|background/.test(part) && !bg) {
+      const tokens = tokenizeWithIndices(part);
+      for (const token of tokens) {
+        const c = findColor(token.word);
+        if (c) {
+          bg = c;
+          explicitBg = true;
+          console.log('✅ Bg:', c, 'from', token.word);
+          break;
+        }
       }
     }
 
-    if ((token.word === 'фон' || token.word === 'background') && !bg) {
-      const found = findColorNearIndex(tokens, token.index);
-      if (found) {
-        bg = found;
-        explicitBg = true;
+    // Якщо в цій частині є "текст" - шукаємо колір ТІЛЬКИ тут
+    if (/текст|text/.test(part) && !textColor) {
+      const tokens = tokenizeWithIndices(part);
+      for (const token of tokens) {
+        const c = findColor(token.word);
+        if (c) {
+          textColor = c;
+          explicitText = true;
+          console.log('✅ Text:', c, 'from', token.word);
+          break;
+        }
       }
     }
   }
 
+  console.log('🎨 Result:', { bg, text: textColor, explicitBg, explicitText });
   return { bg, text: textColor, explicitBg, explicitText };
 }
 
